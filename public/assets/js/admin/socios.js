@@ -38,7 +38,7 @@ if (logoutBtn) {
    GENERAR CÓDIGO SOCIO
 ========================= */
 async function generarCodigo() {
-  const { data, error } = await supabase
+  const { data } = await supabase
     .from("usuarios")
     .select("codigo_socio")
     .not("codigo_socio", "is", null)
@@ -47,7 +47,7 @@ async function generarCodigo() {
 
   let numero = 1;
 
-  if (!error && data && data.length > 0) {
+  if (data && data.length > 0) {
     const ultimo = data[0].codigo_socio;
     const partes = ultimo.split("-");
     if (partes.length === 2) {
@@ -79,39 +79,54 @@ if (form) {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
+    const email = document.getElementById("correo").value.trim();
+    const cedula = document.getElementById("cedula").value.trim();
+
+    if (!email || !cedula) {
+      alert("Correo y cédula son obligatorios");
+      return;
+    }
+
+    /* =========================
+       1️⃣ CREAR USUARIO EN AUTH
+    ========================= */
+    const { data: authData, error: authError } =
+      await supabase.auth.admin.createUser({
+        email,
+        email_confirm: true
+      });
+
+    if (authError) {
+      alert("Error Auth: " + authError.message);
+      return;
+    }
+
+    const authUserId = authData.user.id;
+
+    /* =========================
+       2️⃣ CREAR PERFIL EN TABLA USUARIOS
+    ========================= */
     const nuevoUsuario = {
+      id: authUserId, // 🔑 CLAVE PARA EVITAR DUPLICATE KEY
       codigo_socio: document.getElementById("codigo_socio").value,
-      cedula: document.getElementById("cedula").value.trim(),
+      cedula,
       nombre1: document.getElementById("nombre1").value.trim(),
       nombre2: document.getElementById("nombre2").value.trim() || null,
       apellido1: document.getElementById("apellido1").value.trim(),
       apellido2: document.getElementById("apellido2").value.trim(),
-      email: document.getElementById("correo").value.trim(), // 👈 CAMBIO CLAVE
+      email,
       whatsapp: document.getElementById("whatsapp").value.trim(),
       direccion: document.getElementById("direccion").value.trim(),
       rol: document.getElementById("rol").value,
       estado: document.getElementById("estado").value
     };
 
-    // validación mínima
-    if (
-      !nuevoUsuario.cedula ||
-      !nuevoUsuario.nombre1 ||
-      !nuevoUsuario.apellido1 ||
-      !nuevoUsuario.apellido2 ||
-      !nuevoUsuario.email ||
-      !nuevoUsuario.rol
-    ) {
-      alert("Complete todos los campos obligatorios");
-      return;
-    }
-
-    const { error } = await supabase
+    const { error: insertError } = await supabase
       .from("usuarios")
       .insert(nuevoUsuario);
 
-    if (error) {
-      alert("Error al crear usuario: " + error.message);
+    if (insertError) {
+      alert("Error BD: " + insertError.message);
       return;
     }
 
@@ -144,7 +159,8 @@ async function cargarSocios() {
   tbody.innerHTML = "";
 
   data.forEach((u) => {
-    const nombreCompleto = `${u.nombre1} ${u.nombre2 || ""} ${u.apellido1} ${u.apellido2}`;
+    const nombreCompleto =
+      `${u.nombre1} ${u.nombre2 || ""} ${u.apellido1} ${u.apellido2}`;
 
     tbody.innerHTML += `
       <tr>
