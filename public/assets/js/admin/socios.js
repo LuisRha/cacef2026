@@ -39,9 +39,8 @@ if (logoutBtn) {
 ========================= */
 async function generarCodigo() {
   const { data } = await supabase
-    .from("usuarios")
+    .from("socios")
     .select("codigo_socio")
-    .not("codigo_socio", "is", null)
     .order("created_at", { ascending: false })
     .limit(1);
 
@@ -49,14 +48,11 @@ async function generarCodigo() {
 
   if (data && data.length > 0) {
     const ultimo = data[0].codigo_socio;
-    const partes = ultimo.split("-");
-    if (partes.length === 2) {
-      const n = parseInt(partes[1], 10);
-      if (!isNaN(n)) numero = n + 1;
-    }
+    const n = parseInt(ultimo.split("-")[1], 10);
+    if (!isNaN(n)) numero = n + 1;
   }
 
-  return "SOC-" + String(numero).padStart(4, "0");
+  return "SOC-" + String(numero).padStart(3, "0");
 }
 
 /* =========================
@@ -71,7 +67,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 });
 
 /* =========================
-   CREAR USUARIO / SOCIO
+   CREAR USUARIO (AUTH + USUARIOS)
 ========================= */
 const form = document.getElementById("formSocio");
 
@@ -87,9 +83,7 @@ if (form) {
       return;
     }
 
-    /* =========================
-       1️⃣ CREAR USUARIO EN AUTH
-    ========================= */
+    /* 1️⃣ Crear usuario en Auth */
     const { data: authData, error: authError } =
       await supabase.auth.admin.createUser({
         email,
@@ -103,11 +97,9 @@ if (form) {
 
     const authUserId = authData.user.id;
 
-    /* =========================
-       2️⃣ CREAR PERFIL EN TABLA USUARIOS
-    ========================= */
+    /* 2️⃣ Crear registro en usuarios */
     const nuevoUsuario = {
-      id: authUserId, // 🔑 CLAVE PARA EVITAR DUPLICATE KEY
+      id: authUserId,
       codigo_socio: document.getElementById("codigo_socio").value,
       cedula,
       nombre1: document.getElementById("nombre1").value.trim(),
@@ -121,12 +113,12 @@ if (form) {
       estado: document.getElementById("estado").value
     };
 
-    const { error: insertError } = await supabase
+    const { error: userError } = await supabase
       .from("usuarios")
       .insert(nuevoUsuario);
 
-    if (insertError) {
-      alert("Error BD: " + insertError.message);
+    if (userError) {
+      alert("Error BD: " + userError.message);
       return;
     }
 
@@ -141,34 +133,41 @@ if (form) {
 }
 
 /* =========================
-   LISTAR SOCIOS / USUARIOS
+   LISTAR SOCIOS (TABLA SOCIOS)
 ========================= */
 async function cargarSocios() {
   const { data, error } = await supabase
-    .from("usuarios")
-    .select(
-      "codigo_socio, nombre1, nombre2, apellido1, apellido2, cedula, rol, estado"
-    )
+    .from("socios")
+    .select("codigo_socio, nombres, estado, score")
     .order("created_at", { ascending: false });
 
-  if (error || !data) return;
+  if (error) {
+    console.error(error);
+    return;
+  }
 
   const tbody = document.getElementById("tablaSocios");
   if (!tbody) return;
 
   tbody.innerHTML = "";
 
-  data.forEach((u) => {
-    const nombreCompleto =
-      `${u.nombre1} ${u.nombre2 || ""} ${u.apellido1} ${u.apellido2}`;
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="5" style="text-align:center;">No hay socios registrados</td>
+      </tr>
+    `;
+    return;
+  }
 
+  data.forEach((s) => {
     tbody.innerHTML += `
       <tr>
-        <td>${u.codigo_socio}</td>
-        <td>${nombreCompleto}</td>
-        <td>${u.cedula}</td>
-        <td>${u.rol}</td>
-        <td>${u.estado}</td>
+        <td>${s.codigo_socio}</td>
+        <td>${s.nombres}</td>
+        <td>-</td>
+        <td>SOCIO</td>
+        <td>${s.estado}</td>
       </tr>
     `;
   });
