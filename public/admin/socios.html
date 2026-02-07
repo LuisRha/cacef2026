@@ -27,13 +27,42 @@
 
 <main class="admin-content">
 
-  <h2>Crear nuevo socio</h2>
+  <h2>Crear nuevo usuario</h2>
 
-  <form id="formSocio">
-    <input type="text" id="codigo_socio" placeholder="Código socio (ej: SOC-001)" required>
-    <input type="text" id="nombres" placeholder="Nombres completos" required>
-    <input type="number" id="ahorro_inicial" placeholder="Ahorro inicial" value="0" min="0">
-    <button type="submit">Crear socio</button>
+  <form id="formSocio" class="form-grid">
+
+    <!-- Código automático -->
+    <input type="text" id="codigo_socio" placeholder="Código" readonly>
+
+    <!-- Identificación -->
+    <input type="text" id="cedula" placeholder="Cédula" required>
+
+    <!-- Nombres -->
+    <input type="text" id="nombre1" placeholder="Primer nombre" required>
+    <input type="text" id="nombre2" placeholder="Segundo nombre">
+
+    <!-- Apellidos -->
+    <input type="text" id="apellido1" placeholder="Primer apellido" required>
+    <input type="text" id="apellido2" placeholder="Segundo apellido" required>
+
+    <!-- Contacto -->
+    <input type="email" id="correo" placeholder="Correo electrónico" required>
+    <input type="text" id="whatsapp" placeholder="WhatsApp / Teléfono" required>
+    <input type="text" id="direccion" placeholder="Dirección" required>
+
+    <!-- Sistema -->
+    <select id="rol" required>
+      <option value="">Seleccione rol</option>
+      <option value="ADMIN">Administrador</option>
+      <option value="SOCIO">Socio</option>
+    </select>
+
+    <select id="estado">
+      <option value="ACTIVO">Activo</option>
+      <option value="INACTIVO">Inactivo</option>
+    </select>
+
+    <button type="submit">Crear usuario</button>
   </form>
 
   <hr>
@@ -44,12 +73,15 @@
     <thead>
       <tr>
         <th>Código</th>
-        <th>Nombres</th>
+        <th>Nombre completo</th>
+        <th>Cédula</th>
+        <th>Rol</th>
         <th>Estado</th>
-        <th>Score</th>
       </tr>
     </thead>
-    <tbody id="tablaSocios"></tbody>
+    <tbody id="tablaSocios">
+      <!-- se llena con JS -->
+    </tbody>
   </table>
 
 </main>
