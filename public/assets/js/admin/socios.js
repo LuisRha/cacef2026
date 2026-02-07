@@ -3,21 +3,22 @@ import { supabase } from "../supabase.js";
 /* =========================
    PROTECCIÓN (SOLO ADMIN)
 ========================= */
-const { data: sessionData } = await supabase.auth.getSession();
+const { data: sessionData, error: sessionError } =
+  await supabase.auth.getSession();
 
-if (!sessionData.session) {
+if (sessionError || !sessionData?.session) {
   window.location.href = "/";
 }
 
 const userId = sessionData.session.user.id;
 
-const { data: userData } = await supabase
+const { data: userData, error: userError } = await supabase
   .from("usuarios")
   .select("rol")
   .eq("id", userId)
   .single();
 
-if (!userData || userData.rol !== "ADMIN") {
+if (userError || !userData || userData.rol !== "ADMIN") {
   alert("Acceso no autorizado");
   window.location.href = "/";
 }
@@ -25,36 +26,48 @@ if (!userData || userData.rol !== "ADMIN") {
 /* =========================
    LOGOUT
 ========================= */
-document.getElementById("logoutBtn").onclick = async () => {
-  await supabase.auth.signOut();
-  window.location.href = "/";
-};
+const logoutBtn = document.getElementById("logoutBtn");
+if (logoutBtn) {
+  logoutBtn.onclick = async () => {
+    await supabase.auth.signOut();
+    window.location.href = "/";
+  };
+}
 
 /* =========================
    GENERAR CÓDIGO SOCIO
 ========================= */
 async function generarCodigo() {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("usuarios")
     .select("codigo_socio")
+    .not("codigo_socio", "is", null)
     .order("created_at", { ascending: false })
     .limit(1);
 
   let numero = 1;
 
-  if (data && data.length > 0) {
+  if (!error && data && data.length > 0) {
     const ultimo = data[0].codigo_socio;
-    const n = parseInt(ultimo.split("-")[1]);
-    numero = n + 1;
+    const partes = ultimo.split("-");
+    if (partes.length === 2) {
+      const n = parseInt(partes[1], 10);
+      if (!isNaN(n)) numero = n + 1;
+    }
   }
 
   return "SOC-" + String(numero).padStart(4, "0");
 }
 
-// cargar código al iniciar
+/* =========================
+   INICIALIZACIÓN
+========================= */
 document.addEventListener("DOMContentLoaded", async () => {
-  document.getElementById("codigo_socio").value = await generarCodigo();
-  cargarSocios();
+  const codigoInput = document.getElementById("codigo_socio");
+  if (codigoInput) {
+    codigoInput.value = await generarCodigo();
+  }
+  await cargarSocios();
 });
 
 /* =========================
@@ -62,37 +75,55 @@ document.addEventListener("DOMContentLoaded", async () => {
 ========================= */
 const form = document.getElementById("formSocio");
 
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
+if (form) {
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
 
-  const nuevoUsuario = {
-    codigo_socio: document.getElementById("codigo_socio").value,
-    cedula: document.getElementById("cedula").value,
-    nombre1: document.getElementById("nombre1").value,
-    nombre2: document.getElementById("nombre2").value,
-    apellido1: document.getElementById("apellido1").value,
-    apellido2: document.getElementById("apellido2").value,
-    correo: document.getElementById("correo").value,
-    whatsapp: document.getElementById("whatsapp").value,
-    direccion: document.getElementById("direccion").value,
-    rol: document.getElementById("rol").value,
-    estado: document.getElementById("estado").value
-  };
+    const nuevoUsuario = {
+      codigo_socio: document.getElementById("codigo_socio").value,
+      cedula: document.getElementById("cedula").value.trim(),
+      nombre1: document.getElementById("nombre1").value.trim(),
+      nombre2: document.getElementById("nombre2").value.trim() || null,
+      apellido1: document.getElementById("apellido1").value.trim(),
+      apellido2: document.getElementById("apellido2").value.trim(),
+      correo: document.getElementById("correo").value.trim(),
+      whatsapp: document.getElementById("whatsapp").value.trim(),
+      direccion: document.getElementById("direccion").value.trim(),
+      rol: document.getElementById("rol").value,
+      estado: document.getElementById("estado").value
+    };
 
-  const { error } = await supabase
-    .from("usuarios")
-    .insert(nuevoUsuario);
+    // validación mínima
+    if (
+      !nuevoUsuario.cedula ||
+      !nuevoUsuario.nombre1 ||
+      !nuevoUsuario.apellido1 ||
+      !nuevoUsuario.apellido2 ||
+      !nuevoUsuario.correo ||
+      !nuevoUsuario.rol
+    ) {
+      alert("Complete todos los campos obligatorios");
+      return;
+    }
 
-  if (error) {
-    alert(error.message);
-    return;
-  }
+    const { error } = await supabase
+      .from("usuarios")
+      .insert(nuevoUsuario);
 
-  alert("Usuario creado correctamente");
-  form.reset();
-  document.getElementById("codigo_socio").value = await generarCodigo();
-  cargarSocios();
-});
+    if (error) {
+      alert("Error al crear usuario: " + error.message);
+      return;
+    }
+
+    alert("Usuario creado correctamente");
+    form.reset();
+
+    document.getElementById("codigo_socio").value =
+      await generarCodigo();
+
+    await cargarSocios();
+  });
+}
 
 /* =========================
    LISTAR SOCIOS / USUARIOS
@@ -100,15 +131,19 @@ form.addEventListener("submit", async (e) => {
 async function cargarSocios() {
   const { data, error } = await supabase
     .from("usuarios")
-    .select("codigo_socio, nombre1, nombre2, apellido1, apellido2, cedula, rol, estado")
+    .select(
+      "codigo_socio, nombre1, nombre2, apellido1, apellido2, cedula, rol, estado"
+    )
     .order("created_at", { ascending: false });
 
-  if (error) return;
+  if (error || !data) return;
 
   const tbody = document.getElementById("tablaSocios");
+  if (!tbody) return;
+
   tbody.innerHTML = "";
 
-  data.forEach(u => {
+  data.forEach((u) => {
     const nombreCompleto = `${u.nombre1} ${u.nombre2 || ""} ${u.apellido1} ${u.apellido2}`;
 
     tbody.innerHTML += `
