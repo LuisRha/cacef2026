@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel del Socio | CACEF</title>
+
+  <link rel="stylesheet" href="/assets/css/styles.css" />
+
+  <script src="/assets/js/supabase.js"></script>
+  <script src="/assets/js/auth.js"></script>
+</head>
+<body>
+
+  <header>
+    <h2>Bienvenido, <span id="nombre-socio">Socio</span></h2>
+    <button onclick="logout()">Salir</button>
+  </header>
+
+  <main>
+    <section>
+      <h3>📄 Mis datos</h3>
+      <p><strong>Email:</strong> <span id="email"></span></p>
+      <p><strong>Rol:</strong> SOCIO</p>
+    </section>
+
+    <section>
+      <h3>📊 Resumen</h3>
+      <ul>
+        <li>Créditos activos: <strong id="creditos">0</strong></li>
+        <li>Saldo pendiente: <strong>$0.00</strong></li>
+      </ul>
+    </section>
+
+    <section>
+      <h3>🔗 Opciones</h3>
+      <ul>
+        <li><a href="/socio/movimientos.html">Ver movimientos</a></li>
+        <li><a href="/socio/solicitar-credito.html">Solicitar crédito</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    // protección + datos básicos
+    document.addEventListener("DOMContentLoaded", async () => {
+      const user = JSON.parse(localStorage.getItem("usuario"));
+
+      if (!user || user.rol !== "SOCIO") {
+        window.location.href = "/";
+        return;
+      }
+
+      document.getElementById("nombre-socio").textContent = user.email;
+      document.getElementById("email").textContent = user.email;
+    });
+  </script>
+
+</body>
+</html>
