@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // 3️⃣ Redirección según rol
       if (["ADMIN", "TESORERA", "PRESIDENTE"].includes(usuario.rol)) {
-        window.location.href = "/public/admin/dashboard.html";
+        window.location.href = "/admin/dashboard.html";
       } else if (usuario.rol === "SOCIO") {
         window.location.href = "/socio/dashboard.html";
       } else {
