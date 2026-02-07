@@ -1,0 +1,14 @@
+# Variables y claves
+.env
+.env.local
+.env.production
+
+# Node
+node_modules/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*

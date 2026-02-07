@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Socios | CACEF</title>
+
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/formularios.css">
+  <link rel="stylesheet" href="../assets/css/tablas.css">
+</head>
+<body>
+
+<header class="admin-header">
+  <h1>CACEF - Socios</h1>
+  <button id="logoutBtn">Salir</button>
+</header>
+
+<nav class="admin-menu">
+  <a href="dashboard.html">Dashboard</a>
+  <a href="socios.html" class="active">Socios</a>
+  <a href="historial.html">Historial</a>
+  <a href="pagos.html">Pagos</a>
+  <a href="creditos.html">Créditos</a>
+  <a href="reportes.html">Reportes</a>
+</nav>
+
+<main class="admin-content">
+
+  <h2>Crear nuevo socio</h2>
+
+  <form id="formSocio">
+    <input type="text" id="codigo_socio" placeholder="Código socio (ej: SOC-001)" required>
+    <input type="text" id="nombres" placeholder="Nombres completos" required>
+    <input type="number" id="ahorro_inicial" placeholder="Ahorro inicial" value="0" min="0">
+    <button type="submit">Crear socio</button>
+  </form>
+
+  <hr>
+
+  <h2>Listado de socios</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Código</th>
+        <th>Nombres</th>
+        <th>Estado</th>
+        <th>Score</th>
+      </tr>
+    </thead>
+    <tbody id="tablaSocios"></tbody>
+  </table>
+
+</main>
+
+<script type="module" src="../assets/js/admin/socios.js"></script>
+</body>
+</html>

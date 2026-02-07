@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Historial | CACEF</title>
+
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/tablas.css">
+</head>
+<body>
+
+<header class="admin-header">
+  <h1>CACEF - Historial General</h1>
+  <button id="logoutBtn">Salir</button>
+</header>
+
+<nav class="admin-menu">
+  <a href="dashboard.html">Dashboard</a>
+  <a href="socios.html">Socios</a>
+  <a href="historial.html" class="active">Historial</a>
+  <a href="pagos.html">Pagos</a>
+  <a href="creditos.html">Créditos</a>
+  <a href="reportes.html">Reportes</a>
+</nav>
+
+<main class="admin-content">
+
+  <h2>Movimientos registrados</h2>
+
+  <!-- FILTROS -->
+  <div style="margin-bottom:15px;">
+    <input type="text" id="filtroSocio" placeholder="Código socio (ej: SOC-001)">
+    <input type="date" id="fechaDesde">
+    <input type="date" id="fechaHasta">
+    <button id="btnFiltrar">Filtrar</button>
+  </div>
+
+  <!-- TABLA -->
+  <table>
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Código</th>
+        <th>Socio</th>
+        <th>Descripción</th>
+        <th>Ingreso</th>
+        <th>Egreso</th>
+        <th>Saldo socio</th>
+        <th>Estado</th>
+      </tr>
+    </thead>
+    <tbody id="tablaHistorial"></tbody>
+  </table>
+
+</main>
+
+<script type="module" src="../assets/js/admin/historial.js"></script>
+</body>
+</html>

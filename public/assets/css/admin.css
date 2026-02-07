@@ -1,0 +1,25 @@
+.admin-header {
+  background: #1e293b;
+  color: #fff;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.admin-menu {
+  background: #f1f5f9;
+  padding: 10px;
+  display: flex;
+  gap: 15px;
+}
+
+.admin-menu a {
+  text-decoration: none;
+  font-weight: bold;
+  color: #1e293b;
+}
+
+.admin-content {
+  padding: 20px;
+}

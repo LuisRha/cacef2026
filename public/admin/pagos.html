@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Pagos | CACEF</title>
+
+  <link rel="stylesheet" href="../assets/css/main.css">
+  <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/formularios.css">
+  <link rel="stylesheet" href="../assets/css/tablas.css">
+</head>
+<body>
+
+<header class="admin-header">
+  <h1>CACEF - Pagos</h1>
+  <button id="logoutBtn">Salir</button>
+</header>
+
+<nav class="admin-menu">
+  <a href="dashboard.html">Dashboard</a>
+  <a href="socios.html">Socios</a>
+  <a href="historial.html">Historial</a>
+  <a href="pagos.html" class="active">Pagos</a>
+  <a href="creditos.html">Créditos</a>
+  <a href="reportes.html">Reportes</a>
+</nav>
+
+<main class="admin-content">
+
+  <h2>Registrar pago</h2>
+
+  <form id="formPago">
+    <input type="text" id="codigo_socio" placeholder="Código socio (SOC-001)" required>
+    <input type="number" id="monto" placeholder="Monto pagado" required min="0">
+    <input type="text" id="comprobante" placeholder="N° comprobante / voucher" required>
+    <select id="medio_pago">
+      <option value="TRANSFERENCIA">Transferencia</option>
+      <option value="EFECTIVO">Efectivo</option>
+    </select>
+    <input type="date" id="fecha_pago" required>
+    <button type="submit">Registrar pago</button>
+  </form>
+
+  <hr>
+
+  <h2>Pagos pendientes de validación</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Fecha</th>
+        <th>Socio</th>
+        <th>Monto</th>
+        <th>Comprobante</th>
+        <th>Acción</th>
+      </tr>
+    </thead>
+    <tbody id="tablaPagos"></tbody>
+  </table>
+
+</main>
+
+<script type="module" src="../assets/js/admin/pagos.js"></script>
+</body>
+</html>
