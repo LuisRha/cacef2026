@@ -86,7 +86,7 @@ if (form) {
       nombre2: document.getElementById("nombre2").value.trim() || null,
       apellido1: document.getElementById("apellido1").value.trim(),
       apellido2: document.getElementById("apellido2").value.trim(),
-      correo: document.getElementById("correo").value.trim(),
+      email: document.getElementById("correo").value.trim(), // 👈 CAMBIO CLAVE
       whatsapp: document.getElementById("whatsapp").value.trim(),
       direccion: document.getElementById("direccion").value.trim(),
       rol: document.getElementById("rol").value,
@@ -99,7 +99,7 @@ if (form) {
       !nuevoUsuario.nombre1 ||
       !nuevoUsuario.apellido1 ||
       !nuevoUsuario.apellido2 ||
-      !nuevoUsuario.correo ||
+      !nuevoUsuario.email ||
       !nuevoUsuario.rol
     ) {
       alert("Complete todos los campos obligatorios");
