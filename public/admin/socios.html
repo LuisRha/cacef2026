@@ -4,10 +4,12 @@
   <meta charset="UTF-8">
   <title>Socios | CACEF</title>
 
+  <!-- CSS BASE (NO LOS QUITES) -->
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/admin.css">
   <link rel="stylesheet" href="../assets/css/formularios.css">
   <link rel="stylesheet" href="../assets/css/tablas.css">
+  <link rel="stylesheet" href="../assets/css/socio.css">
 </head>
 <body>
 
@@ -16,54 +18,67 @@
   <button id="logoutBtn">Salir</button>
 </header>
 
-<nav class="admin-menu">
-  <a href="dashboard.html">Dashboard</a>
-  <a href="socios.html" class="active">Socios</a>
-  <a href="historial.html">Historial</a>
-  <a href="pagos.html">Pagos</a>
-  <a href="creditos.html">Créditos</a>
-  <a href="reportes.html">Reportes</a>
-</nav>
-
 <main class="admin-content">
 
-  <h2>Crear nuevo usuario</h2>
+  <!-- BOTÓN TOGGLE -->
+  <button id="btnMostrarForm" class="btn-toggle">
+    ➕ Crear nuevo socio
+  </button>
 
-  <form id="formSocio" class="form-grid">
+  <!-- CONTENEDOR FORMULARIO -->
+  <div id="contenedorForm" class="form-contenedor oculto">
 
-    <!-- Código automático (OCULTO) -->
-    <input type="hidden" id="codigo_socio">
+    <h2>Crear nuevo socio</h2>
 
-    <!-- Identificación -->
-    <input type="text" id="cedula" placeholder="Cédula" required>
+    <form id="formSocio" class="form-grid" novalidate>
 
-    <!-- Nombres -->
-    <input type="text" id="nombre1" placeholder="Primer nombre" required>
-    <input type="text" id="nombre2" placeholder="Segundo nombre">
+      <!-- Código automático -->
+      <input type="hidden" id="codigo_socio">
 
-    <!-- Apellidos -->
-    <input type="text" id="apellido1" placeholder="Primer apellido" required>
-    <input type="text" id="apellido2" placeholder="Segundo apellido" required>
+      <!-- CÉDULA -->
+      <input
+        type="text"
+        id="cedula"
+        placeholder="Cédula (ej: 150085834-3)"
+        required
+        maxlength="11"
+        pattern="^\d{9}-\d{1}$"
+        autocomplete="off"
+      >
 
-    <!-- Contacto -->
-    <input type="email" id="correo" placeholder="Correo electrónico" required>
-    <input type="text" id="whatsapp" placeholder="WhatsApp / Teléfono" required>
-    <input type="text" id="direccion" placeholder="Dirección" required>
+      <!-- Nombres -->
+      <input type="text" id="nombre1" placeholder="Primer nombre" required>
+      <input type="text" id="nombre2" placeholder="Segundo nombre">
 
-    <!-- Sistema -->
-    <select id="rol" required>
-      <option value="">Seleccione rol</option>
-      <option value="ADMIN">Administrador</option>
-      <option value="SOCIO">Socio</option>
-    </select>
+      <!-- Apellidos -->
+      <input type="text" id="apellido1" placeholder="Primer apellido" required>
+      <input type="text" id="apellido2" placeholder="Segundo apellido">
 
-    <select id="estado">
-      <option value="ACTIVO">Activo</option>
-      <option value="INACTIVO">Inactivo</option>
-    </select>
+      <!-- Correo -->
+      <input type="email" id="correo" placeholder="Correo electrónico" required>
 
-    <button type="submit">Crear usuario</button>
-  </form>
+      <!-- WhatsApp -->
+      <input
+        type="text"
+        id="whatsapp"
+        placeholder="WhatsApp (09xxxxxxxx)"
+        required
+        maxlength="10"
+        pattern="^09\d{8}$"
+      >
+
+      <!-- Dirección -->
+      <input type="text" id="direccion" placeholder="Dirección" required>
+
+      <!-- Estado -->
+      <select id="estado" required>
+        <option value="ACTIVO">Activo</option>
+        <option value="INACTIVO">Inactivo</option>
+      </select>
+
+      <button type="submit">Crear socio</button>
+    </form>
+  </div>
 
   <hr>
 
@@ -75,17 +90,21 @@
         <th>Código</th>
         <th>Nombre completo</th>
         <th>Cédula</th>
-        <th>Rol</th>
+        <th>Saldo</th>
+        <th>Deuda pendiente</th>
         <th>Estado</th>
       </tr>
     </thead>
+
+    <!-- 👇 ESTE ID ES CLAVE -->
     <tbody id="tablaSocios">
-      <!-- se llena con JS -->
+      <!-- Socios cargados por JS -->
     </tbody>
   </table>
 
 </main>
 
+<!-- JS -->
 <script type="module" src="../assets/js/admin/socios.js"></script>
 </body>
 </html>

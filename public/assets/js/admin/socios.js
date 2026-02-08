@@ -1,4 +1,6 @@
 import { supabase } from "../supabase.js";
+console.log("🔥 supabase importado", supabase);
+
 
 /* =========================
    PROTECCIÓN (SOLO ADMIN)
@@ -8,6 +10,7 @@ const { data: sessionData, error: sessionError } =
 
 if (sessionError || !sessionData?.session) {
   window.location.href = "/";
+  throw new Error("Sin sesión");
 }
 
 const userId = sessionData.session.user.id;
@@ -18,9 +21,10 @@ const { data: userData, error: userError } = await supabase
   .eq("id", userId)
   .single();
 
-if (userError || !userData || userData.rol !== "ADMIN") {
+if (userError || userData?.rol !== "ADMIN") {
   alert("Acceso no autorizado");
   window.location.href = "/";
+  throw new Error("No admin");
 }
 
 /* =========================
@@ -38,135 +42,193 @@ if (logoutBtn) {
    GENERAR CÓDIGO SOCIO
 ========================= */
 async function generarCodigo() {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("socios")
-    .select("codigo_socio")
-    .order("created_at", { ascending: false })
-    .limit(1);
+    .select("codigo_socio");
 
-  let numero = 1;
-
-  if (data && data.length > 0) {
-    const ultimo = data[0].codigo_socio;
-    const n = parseInt(ultimo.split("-")[1], 10);
-    if (!isNaN(n)) numero = n + 1;
+  if (error || !data || data.length === 0) {
+    return "SOC-001";
   }
 
-  return "SOC-" + String(numero).padStart(3, "0");
+  const numeros = data
+    .map(s => parseInt(s.codigo_socio.replace("SOC-", ""), 10))
+    .filter(n => !isNaN(n));
+
+  const max = Math.max(...numeros);
+
+  return "SOC-" + String(max + 1).padStart(3, "0");
 }
+
 
 /* =========================
    INICIALIZACIÓN
 ========================= */
 document.addEventListener("DOMContentLoaded", async () => {
-  const codigoInput = document.getElementById("codigo_socio");
-  if (codigoInput) {
-    codigoInput.value = await generarCodigo();
+  document.getElementById("codigo_socio").value = await generarCodigo();
+  cargarSocios();
+});
+
+// ✅ Cargar socios SOLO cuando la sesión esté lista
+supabase.auth.onAuthStateChange((event, session) => {
+  if (session) {
+    console.log("✅ Sesión lista, cargando socios");
+    cargarSocios();
   }
-  await cargarSocios();
+});
+
+
+/* =========================
+   TOGGLE FORMULARIO
+========================= */
+const btnToggle = document.getElementById("btnMostrarForm");
+const contenedorForm = document.getElementById("contenedorForm");
+
+btnToggle.addEventListener("click", () => {
+  contenedorForm.classList.toggle("oculto");
+  btnToggle.textContent = contenedorForm.classList.contains("oculto")
+    ? "➕ Crear nuevo socio"
+    : "✖ Cerrar formulario";
 });
 
 /* =========================
-   CREAR USUARIO (AUTH + USUARIOS)
+   FORMATEOS INPUT
+========================= */
+const cedulaInput = document.getElementById("cedula");
+cedulaInput.addEventListener("input", () => {
+  let valor = cedulaInput.value.replace(/\D/g, "");
+  if (valor.length > 10) valor = valor.slice(0, 10);
+  if (valor.length > 9) valor = valor.slice(0, 9) + "-" + valor.slice(9);
+  cedulaInput.value = valor;
+});
+
+const whatsappInput = document.getElementById("whatsapp");
+whatsappInput.addEventListener("input", () => {
+  let valor = whatsappInput.value.replace(/\D/g, "");
+  if (valor.length > 10) valor = valor.slice(0, 10);
+  whatsappInput.value = valor;
+});
+
+/* =========================
+   CREAR SOCIO (SIN AUTH)
 ========================= */
 const form = document.getElementById("formSocio");
 
-if (form) {
-  form.addEventListener("submit", async (e) => {
-    e.preventDefault();
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-    const email = document.getElementById("correo").value.trim();
-    const cedula = document.getElementById("cedula").value.trim();
+  const nombre1 = document.getElementById("nombre1").value.trim();
+  const nombre2 = document.getElementById("nombre2").value.trim();
+  const apellido1 = document.getElementById("apellido1").value.trim();
+  const apellido2 = document.getElementById("apellido2").value.trim();
 
-    if (!email || !cedula) {
-      alert("Correo y cédula son obligatorios");
-      return;
-    }
+  if (!nombre1 || !apellido1) {
+    alert("Primer nombre y primer apellido son obligatorios");
+    return;
+  }
 
-    /* 1️⃣ Crear usuario en Auth */
-    const { data: authData, error: authError } =
-      await supabase.auth.admin.createUser({
-        email,
-        email_confirm: true
-      });
+  const nombres = [nombre1, nombre2, apellido1, apellido2]
+    .filter(v => v && v.length > 0)
+    .join(" ");
 
-    if (authError) {
-      alert("Error Auth: " + authError.message);
-      return;
-    }
+  const socio = {
+    // ❌ YA NO SE ENVÍA codigo_socio
+    cedula: cedulaInput.value.trim(),
 
-    const authUserId = authData.user.id;
+    // 👇 TUS CAMPOS ORIGINALES
+    nombre1,
+    nombre2: nombre2 || null,
+    apellido1,
+    apellido2,
 
-    /* 2️⃣ Crear registro en usuarios */
-    const nuevoUsuario = {
-      id: authUserId,
-      codigo_socio: document.getElementById("codigo_socio").value,
-      cedula,
-      nombre1: document.getElementById("nombre1").value.trim(),
-      nombre2: document.getElementById("nombre2").value.trim() || null,
-      apellido1: document.getElementById("apellido1").value.trim(),
-      apellido2: document.getElementById("apellido2").value.trim(),
-      email,
-      whatsapp: document.getElementById("whatsapp").value.trim(),
-      direccion: document.getElementById("direccion").value.trim(),
-      rol: document.getElementById("rol").value,
-      estado: document.getElementById("estado").value
-    };
+    // 👇 CAMPO OBLIGATORIO EN BD
+    nombres,
 
-    const { error: userError } = await supabase
-      .from("usuarios")
-      .insert(nuevoUsuario);
+    email: document.getElementById("correo").value.trim(),
+    whatsapp: whatsappInput.value.trim(),
+    direccion: document.getElementById("direccion").value.trim(),
+    estado: document.getElementById("estado").value,
 
-    if (userError) {
-      alert("Error BD: " + userError.message);
-      return;
-    }
+    // 👇 CAMPOS FINANCIEROS
+    saldo: 0,
+    deuda_actual: 0
+  };
 
-    alert("Usuario creado correctamente");
-    form.reset();
+  const { error } = await supabase.from("socios").insert(socio);
 
-    document.getElementById("codigo_socio").value =
-      await generarCodigo();
+  if (error) {
+    alert("Error BD: " + error.message);
+    return;
+  }
 
-    await cargarSocios();
-  });
-}
+  alert("Socio creado correctamente");
+  form.reset();
+
+  // ❌ YA NO LLAMES generarCodigo()
+  cargarSocios();
+});
+
+
 
 /* =========================
-   LISTAR SOCIOS (TABLA SOCIOS)
+   LISTAR SOCIOS
 ========================= */
 async function cargarSocios() {
   const { data, error } = await supabase
     .from("socios")
-    .select("codigo_socio, nombres, estado, score")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error(error);
-    return;
-  }
+    .select(`
+      codigo_socio,
+      nombres,
+      nombre1,
+      nombre2,
+      apellido1,
+      apellido2,
+      cedula,
+      saldo,
+      deuda_actual,
+      estado
+    `)
+    .order("created_at", { ascending: true });
 
   const tbody = document.getElementById("tablaSocios");
-  if (!tbody) return;
-
   tbody.innerHTML = "";
 
-  if (!data || data.length === 0) {
+  if (error) {
+    console.error("Error al cargar socios:", error);
     tbody.innerHTML = `
       <tr>
-        <td colspan="5" style="text-align:center;">No hay socios registrados</td>
+        <td colspan="6" style="text-align:center;">
+          Error al cargar socios
+        </td>
       </tr>
     `;
     return;
   }
 
-  data.forEach((s) => {
+  if (!data || data.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align:center;">
+          No hay socios registrados
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  data.forEach(s => {
+    const nombreCompleto =
+      s.nombres ||
+      [s.nombre1, s.nombre2, s.apellido1, s.apellido2]
+        .filter(Boolean)
+        .join(" ");
+
     tbody.innerHTML += `
       <tr>
         <td>${s.codigo_socio}</td>
-        <td>${s.nombres}</td>
-        <td>-</td>
-        <td>SOCIO</td>
+        <td>${nombreCompleto || "-"}</td>
+        <td>${s.cedula ?? "-"}</td>
+        <td>$ ${Number(s.saldo ?? 0).toFixed(2)}</td>
+        <td>$ ${Number(s.deuda_actual ?? 0).toFixed(2)}</td>
         <td>${s.estado}</td>
       </tr>
     `;
