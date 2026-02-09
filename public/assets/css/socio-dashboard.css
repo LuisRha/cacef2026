@@ -1,0 +1,26 @@
+.socio-header {
+  background: #1f2937;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.socio-content {
+  padding: 20px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 15px;
+  margin-bottom: 15px;
+  box-shadow: 0 2px 6px rgba(0,0,0,.1);
+}
+
+.saldo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  color: #16a34a;
+}

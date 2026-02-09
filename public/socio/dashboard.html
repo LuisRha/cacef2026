@@ -1,59 +1,60 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Panel del Socio | CACEF</title>
+  <meta charset="UTF-8">
+  <title>Socio | CACEF</title>
 
-  <link rel="stylesheet" href="/assets/css/styles.css" />
+  <!-- CSS GLOBAL -->
+  <link rel="stylesheet" href="../assets/css/main.css">
 
-  <script src="/assets/js/supabase.js"></script>
-  <script src="/assets/js/auth.js"></script>
+  <!-- CSS SOCIO GENERAL -->
+  <link rel="stylesheet" href="../assets/css/socio.css">
+
+  <!-- CSS ESPECÍFICO DASHBOARD SOCIO -->
+  <link rel="stylesheet" href="../assets/css/socio-dashboard.css">
 </head>
 <body>
 
-  <header>
-    <h2>Bienvenido, <span id="nombre-socio">Socio</span></h2>
-    <button onclick="logout()">Salir</button>
+  <!-- HEADER -->
+  <header class="socio-header">
+    <h1>CACEF - Área del Socio</h1>
+    <button id="logoutBtn">Salir</button>
   </header>
 
-  <main>
-    <section>
-      <h3>📄 Mis datos</h3>
-      <p><strong>Email:</strong> <span id="email"></span></p>
-      <p><strong>Rol:</strong> SOCIO</p>
+  <!-- CONTENIDO -->
+  <main class="socio-content">
+
+    <section class="card">
+      <h2>Bienvenido, <span id="nombreSocio">---</span></h2>
+      <p>Código socio: <strong id="codigoSocio">---</strong></p>
     </section>
 
-    <section>
+    <section class="card">
+      <h3>💰 Saldo actual</h3>
+      <p class="saldo">$ <span id="saldo">0.00</span></p>
+    </section>
+
+    <section class="card">
       <h3>📊 Resumen</h3>
       <ul>
-        <li>Créditos activos: <strong id="creditos">0</strong></li>
-        <li>Saldo pendiente: <strong>$0.00</strong></li>
+        <li>Total movimientos: <strong id="totalMovimientos">0</strong></li>
+        <li>Créditos activos: <strong id="creditosActivos">0</strong></li>
+        <li>Cuotas vencidas: <strong id="cuotasVencidas">0</strong></li>
       </ul>
     </section>
 
-    <section>
-      <h3>🔗 Opciones</h3>
-      <ul>
-        <li><a href="/socio/movimientos.html">Ver movimientos</a></li>
-        <li><a href="/socio/solicitar-credito.html">Solicitar crédito</a></li>
-      </ul>
+    <section class="card">
+      <h3>🔗 Accesos</h3>
+      <div class="links">
+        <a href="movimientos.html">📄 Mis movimientos</a>
+        <a href="solicitar-credito.html">💳 Solicitar crédito</a>
+        <a href="atrasos.html">⏰ Ver atrasos</a>
+      </div>
     </section>
+
   </main>
 
-  <script>
-    // protección + datos básicos
-    document.addEventListener("DOMContentLoaded", async () => {
-      const user = JSON.parse(localStorage.getItem("usuario"));
-
-      if (!user || user.rol !== "SOCIO") {
-        window.location.href = "/";
-        return;
-      }
-
-      document.getElementById("nombre-socio").textContent = user.email;
-      document.getElementById("email").textContent = user.email;
-    });
-  </script>
-
+  <!-- JS DASHBOARD SOCIO -->
+  <script type="module" src="../assets/js/socio/dashboard.js"></script>
 </body>
 </html>

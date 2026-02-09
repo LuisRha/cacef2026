@@ -1,25 +1,20 @@
 import { supabase } from "./supabase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
-  // Referencias al DOM
   const loginForm = document.getElementById("loginForm");
   const errorMsg = document.getElementById("error");
 
   if (!loginForm || !errorMsg) {
-    console.error("Formulario o mensaje de error no encontrado en el DOM");
+    console.error("Formulario o mensaje de error no encontrado");
     return;
   }
 
-  // Evento submit
   loginForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     errorMsg.textContent = "";
 
-    const emailInput = document.getElementById("email");
-    const passwordInput = document.getElementById("password");
-
-    const email = emailInput?.value.trim();
-    const password = passwordInput?.value.trim();
+    const email = document.getElementById("email")?.value.trim();
+    const password = document.getElementById("password")?.value.trim();
 
     if (!email || !password) {
       errorMsg.textContent = "Ingrese correo y contraseña";
@@ -27,7 +22,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     try {
-      // 1️⃣ Login con Supabase Auth
+      /* =========================
+         1️⃣ LOGIN
+      ========================= */
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -40,7 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       const userId = data.user.id;
 
-      // 2️⃣ Obtener rol y estado desde tabla usuarios
+      /* =========================
+         2️⃣ ROL Y ESTADO
+      ========================= */
       const { data: usuario, error: roleError } = await supabase
         .from("usuarios")
         .select("rol, activo")
@@ -59,18 +58,27 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      // 3️⃣ Redirección según rol
+      /* =========================
+         3️⃣ REDIRECCIÓN
+      ========================= */
       if (["ADMIN", "TESORERA", "PRESIDENTE"].includes(usuario.rol)) {
         window.location.href = "/admin/dashboard.html";
-      } else if (usuario.rol === "SOCIO") {
-        window.location.href = "/socio/dashboard.html";
-      } else {
-        errorMsg.textContent = "Rol no reconocido";
-        await supabase.auth.signOut();
+        return;
       }
+
+      if (usuario.rol === "SOCIO") {
+        window.location.href = "/socio/dashboard.html";
+        return;
+      }
+
+      // rol no reconocido
+      errorMsg.textContent = "Rol no reconocido";
+      await supabase.auth.signOut();
+
     } catch (err) {
-      console.error(err);
+      console.error("Error login:", err);
       errorMsg.textContent = "Error inesperado, intente nuevamente";
+      await supabase.auth.signOut();
     }
   });
 });
