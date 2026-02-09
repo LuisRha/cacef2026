@@ -2,52 +2,115 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Historial | CACEF</title>
+  <title>Movimientos | CACEF</title>
 
+  <!-- CSS BASE -->
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/admin.css">
+  <link rel="stylesheet" href="../assets/css/formularios.css">
   <link rel="stylesheet" href="../assets/css/tablas.css">
+  <link rel="stylesheet" href="../assets/css/historial.css">
 </head>
 <body>
 
 <header class="admin-header">
-  <h1>CACEF - Historial General</h1>
-  <button id="logoutBtn">Salir</button>
+  <h1>CACEF - Movimientos</h1>
+  <button id="logoutBtn" type="button">Salir</button>
 </header>
 
 <nav class="admin-menu">
   <a href="dashboard.html">Dashboard</a>
-  <a href="socios.html">Socios</a>
-  <a href="historial.html" class="active">Historial</a>
-  <a href="pagos.html">Pagos</a>
-  <a href="creditos.html">Créditos</a>
-  <a href="reportes.html">Reportes</a>
 </nav>
 
 <main class="admin-content">
 
+  <!-- =========================
+       REGISTRAR MOVIMIENTO
+  ========================== -->
+  <h2>Registrar movimiento</h2>
+
+  <div class="form-movimiento">
+
+    <!-- BUSCADOR DE SOCIO -->
+    <div class="autocomplete-container">
+      <input
+        type="text"
+        id="buscarSocio"
+        placeholder="Buscar socio por nombre o cédula"
+        autocomplete="off"
+      >
+      <div id="listaSocios" class="autocomplete-list"></div>
+    </div>
+
+    <!-- CÓDIGO SOCIO (OCULTO, USO INTERNO) -->
+    <input type="hidden" id="codigoSocio">
+
+    <select id="tipoMovimiento">
+      <option value="">Tipo de movimiento</option>
+      <option value="DEPOSITO">DEPÓSITO</option>
+      <option value="RETIRO">RETIRO</option>
+      <option value="PAGO">PAGO</option>
+      <option value="CREDITO">CRÉDITO</option>
+      <option value="AJUSTE">AJUSTE</option>
+    </select>
+
+    <input
+      type="text"
+      id="descripcionMovimiento"
+      placeholder="Descripción (ej: APERTURA CUENTA)"
+    >
+
+    <input
+      type="number"
+      id="montoMovimiento"
+      placeholder="Monto"
+      step="0.01"
+      min="0"
+    >
+
+    <select id="tipoMonto">
+      <option value="INGRESO">INGRESO</option>
+      <option value="EGRESO">EGRESO</option>
+    </select>
+
+    <input type="date" id="fechaMovimiento" max="">
+
+
+    <!-- 🔴 CLAVE: type="button" -->
+    <button id="btnRegistrarMovimiento" type="button">
+      Registrar movimiento
+    </button>
+
+  </div>
+
+  <hr>
+
+  <!-- =========================
+       HISTORIAL
+  ========================== -->
   <h2>Movimientos registrados</h2>
 
   <!-- FILTROS -->
-  <div style="margin-bottom:15px;">
+  <div class="filtros-historial">
     <input type="text" id="filtroSocio" placeholder="Código socio (ej: SOC-001)">
     <input type="date" id="fechaDesde">
     <input type="date" id="fechaHasta">
-    <button id="btnFiltrar">Filtrar</button>
+    <button id="btnFiltrar" type="button">Filtrar</button>
   </div>
 
   <!-- TABLA -->
   <table>
     <thead>
       <tr>
+         <th>N°</th>
         <th>Fecha</th>
         <th>Código</th>
         <th>Socio</th>
         <th>Descripción</th>
         <th>Ingreso</th>
         <th>Egreso</th>
-        <th>Saldo socio</th>
-        <th>Estado</th>
+        <th>Total</th>
+        <th>Vencimiento</th>
       </tr>
     </thead>
     <tbody id="tablaHistorial"></tbody>
@@ -55,6 +118,7 @@
 
 </main>
 
+<!-- JS (FRONTEND) -->
 <script type="module" src="../assets/js/admin/historial.js"></script>
 </body>
 </html>

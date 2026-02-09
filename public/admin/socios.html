@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Socios | CACEF</title>
 
-  <!-- CSS BASE (NO LOS QUITES) -->
+  <!-- CSS BASE -->
   <link rel="stylesheet" href="../assets/css/main.css">
   <link rel="stylesheet" href="../assets/css/admin.css">
   <link rel="stylesheet" href="../assets/css/formularios.css">
@@ -17,6 +17,9 @@
   <h1>CACEF - Socios</h1>
   <button id="logoutBtn">Salir</button>
 </header>
+<nav class="admin-menu">
+  <a href="dashboard.html">Dashboard</a>
+</nav>
 
 <main class="admin-content">
 
@@ -48,20 +51,20 @@
 
       <!-- Nombres -->
       <input type="text" id="nombre1" placeholder="Primer nombre" required>
-      <input type="text" id="nombre2" placeholder="Segundo nombre">
+      <input type="text" id="nombre2" placeholder="Segundo nombre (opcional)">
 
       <!-- Apellidos -->
       <input type="text" id="apellido1" placeholder="Primer apellido" required>
-      <input type="text" id="apellido2" placeholder="Segundo apellido">
+      <input type="text" id="apellido2" placeholder="Segundo apellido" required>
 
       <!-- Correo -->
-      <input type="email" id="correo" placeholder="Correo electrónico" required>
+      <input type="email" id="email" placeholder="Correo electrónico" required>
 
-      <!-- WhatsApp -->
+      <!-- Celular (ÚNICO TELÉFONO) -->
       <input
         type="text"
-        id="whatsapp"
-        placeholder="WhatsApp (09xxxxxxxx)"
+        id="celular"
+        placeholder="Celular (09xxxxxxxx)"
         required
         maxlength="10"
         pattern="^09\d{8}$"
@@ -96,7 +99,6 @@
       </tr>
     </thead>
 
-    <!-- 👇 ESTE ID ES CLAVE -->
     <tbody id="tablaSocios">
       <!-- Socios cargados por JS -->
     </tbody>
@@ -104,7 +106,6 @@
 
 </main>
 
-<!-- JS -->
 <script type="module" src="../assets/js/admin/socios.js"></script>
 </body>
 </html>

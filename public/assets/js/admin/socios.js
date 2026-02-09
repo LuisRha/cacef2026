@@ -27,6 +27,7 @@ if (userError || userData?.rol !== "ADMIN") {
   throw new Error("No admin");
 }
 
+
 /* =========================
    LOGOUT
 ========================= */
@@ -37,6 +38,7 @@ if (logoutBtn) {
     window.location.href = "/";
   };
 }
+
 
 /* =========================
    GENERAR CÓDIGO SOCIO
@@ -90,6 +92,7 @@ btnToggle.addEventListener("click", () => {
     : "✖ Cerrar formulario";
 });
 
+
 /* =========================
    FORMATEOS INPUT
 ========================= */
@@ -101,12 +104,13 @@ cedulaInput.addEventListener("input", () => {
   cedulaInput.value = valor;
 });
 
-const whatsappInput = document.getElementById("whatsapp");
-whatsappInput.addEventListener("input", () => {
-  let valor = whatsappInput.value.replace(/\D/g, "");
+const celularInput = document.getElementById("celular");
+celularInput.addEventListener("input", () => {
+  let valor = celularInput.value.replace(/\D/g, "");
   if (valor.length > 10) valor = valor.slice(0, 10);
-  whatsappInput.value = valor;
+  celularInput.value = valor;
 });
+
 
 /* =========================
    CREAR SOCIO (SIN AUTH)
@@ -143,8 +147,8 @@ form.addEventListener("submit", async (e) => {
     // 👇 CAMPO OBLIGATORIO EN BD
     nombres,
 
-    email: document.getElementById("correo").value.trim(),
-    whatsapp: whatsappInput.value.trim(),
+    email: document.getElementById("email").value.trim(),
+    celular: celularInput.value.trim(),
     direccion: document.getElementById("direccion").value.trim(),
     estado: document.getElementById("estado").value,
 
@@ -152,6 +156,11 @@ form.addEventListener("submit", async (e) => {
     saldo: 0,
     deuda_actual: 0
   };
+
+  if (!socio.cedula || !socio.email || !socio.celular) {
+    alert("Cédula, email y celular son obligatorios");
+    return;
+  }
 
   const { error } = await supabase.from("socios").insert(socio);
 
@@ -163,10 +172,8 @@ form.addEventListener("submit", async (e) => {
   alert("Socio creado correctamente");
   form.reset();
 
-  // ❌ YA NO LLAMES generarCodigo()
   cargarSocios();
 });
-
 
 
 /* =========================

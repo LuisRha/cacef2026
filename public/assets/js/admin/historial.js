@@ -1,88 +1,201 @@
 import { supabase } from "../supabase.js";
 
-// 🔐 PROTECCIÓN
-const { data: sessionData } = await supabase.auth.getSession();
-if (!sessionData.session) {
-  window.location.href = "/index.html";
+console.log("🔥 historial.js cargado");
+
+/* =========================
+   ELEMENTOS
+========================= */
+const buscarSocio = document.getElementById("buscarSocio");
+const listaSocios = document.getElementById("listaSocios");
+const inputCodigoSocio = document.getElementById("codigoSocio");
+
+const tipoMovimiento = document.getElementById("tipoMovimiento");
+const descripcionMovimiento = document.getElementById("descripcionMovimiento");
+const montoMovimiento = document.getElementById("montoMovimiento");
+const tipoMonto = document.getElementById("tipoMonto");
+const fechaMovimiento = document.getElementById("fechaMovimiento");
+const btnRegistrarMovimiento = document.getElementById("btnRegistrarMovimiento");
+
+const tablaHistorial = document.getElementById("tablaHistorial");
+
+/* =========================
+   AUTOCOMPLETAR SOCIO
+========================= */
+buscarSocio.addEventListener("input", async () => {
+  const texto = buscarSocio.value.trim();
+
+  listaSocios.innerHTML = "";
+  listaSocios.style.display = "block";
+
+  if (texto.length < 2) {
+    listaSocios.style.display = "none";
+    return;
+  }
+
+  console.log("🔍 Buscando socio:", texto);
+
+  const { data, error } = await supabase
+    .from("socios")
+    .select("codigo_socio, nombres")
+    .ilike("nombres", `%${texto}%`)
+    .limit(10);
+
+  if (error) {
+    console.error("❌ Error buscando socios:", error);
+    return;
+  }
+
+  if (!data || data.length === 0) {
+    listaSocios.innerHTML =
+      "<div class='autocomplete-item'>No encontrado</div>";
+    return;
+  }
+
+  data.forEach((socio) => {
+    const item = document.createElement("div");
+    item.className = "autocomplete-item";
+    item.textContent = `${socio.nombres} (${socio.codigo_socio})`;
+
+    item.addEventListener("click", () => {
+      buscarSocio.value = socio.nombres;
+      inputCodigoSocio.value = socio.codigo_socio;
+      listaSocios.innerHTML = "";
+      listaSocios.style.display = "none";
+    });
+
+    listaSocios.appendChild(item);
+  });
+});
+
+// cerrar autocomplete al hacer click fuera
+document.addEventListener("click", (e) => {
+  if (!buscarSocio.contains(e.target) && !listaSocios.contains(e.target)) {
+    listaSocios.innerHTML = "";
+    listaSocios.style.display = "none";
+  }
+});
+
+/* =========================
+   REGISTRAR MOVIMIENTO
+========================= */
+btnRegistrarMovimiento.addEventListener("click", async () => {
+  console.log("🟢 Click en Registrar movimiento");
+
+  const codigoSocio = inputCodigoSocio.value.trim();
+  const tipo = tipoMovimiento.value;
+  const descripcion = descripcionMovimiento.value.trim();
+  const monto = Number(montoMovimiento.value);
+  const fecha = fechaMovimiento.value;
+  const tipoMontoSeleccionado = tipoMonto.value;
+
+  // ✅ VALIDACIONES CORRECTAS
+  if (
+    !codigoSocio ||
+    !tipo ||
+    isNaN(monto) ||
+    monto <= 0 ||
+    !fecha ||
+    !tipoMontoSeleccionado
+  ) {
+    alert("❌ Completa correctamente todos los campos obligatorios");
+    return;
+  }
+
+  const ingreso = tipoMontoSeleccionado === "INGRESO" ? monto : 0;
+  const egreso = tipoMontoSeleccionado === "EGRESO" ? monto : 0;
+
+  const { error } = await supabase.rpc("insertar_movimiento_por_codigo", {
+    p_codigo_socio: codigoSocio,
+    p_tipo: tipo,
+    p_descripcion: descripcion || null,
+    p_ingreso: ingreso,
+    p_egreso: egreso,
+    p_fecha: fecha
+  });
+
+  if (error) {
+    console.error("❌ Error registrando movimiento:", error);
+    alert("❌ Error al registrar movimiento");
+    return;
+  }
+
+  alert("✅ Movimiento registrado correctamente");
+
+  // limpiar formulario
+  descripcionMovimiento.value = "";
+  montoMovimiento.value = "";
+  fechaMovimiento.value = "";
+  tipoMovimiento.value = "";
+  tipoMonto.value = "INGRESO";
+
+  cargarHistorial();
+});
+
+/* =========================
+   CARGAR HISTORIAL
+========================= */
+async function cargarHistorial() {
+  console.log("📥 Cargando historial...");
+
+  const { data, error } = await supabase
+    .from("v_historial_excel")
+    .select("*");
+
+  if (error) {
+    console.error("❌ Error cargando historial:", error);
+    return;
+  }
+
+  renderTabla(data || []);
 }
 
-const userId = sessionData.session.user.id;
-const { data: userData } = await supabase
-  .from("usuarios")
-  .select("rol")
-  .eq("id", userId)
-  .single();
 
-if (!userData || userData.rol === "SOCIO") {
-  alert("Acceso no autorizado");
-  window.location.href = "/index.html";
-}
+/* =========================
+   RENDER TABLA
+========================= */
+function renderTabla(data) {
+  tablaHistorial.innerHTML = "";
 
-// 🚪 LOGOUT
-document.getElementById("logoutBtn").onclick = async () => {
-  await supabase.auth.signOut();
-  window.location.href = "/index.html";
-};
-
-// 📘 CARGAR HISTORIAL
-async function cargarHistorial(filtros = {}) {
-  let query = supabase
-    .from("historial_movimientos")
-    .select(`
-      fecha_registro,
-      codigo_movimiento,
-      descripcion,
-      ingreso,
-      egreso,
-      saldo_socio,
-      estado_validacion,
-      socios (codigo_socio)
-    `)
-    .order("fecha_registro", { ascending: false });
-
-  if (filtros.codigo) {
-    query = query.eq("socios.codigo_socio", filtros.codigo);
-  }
-
-  if (filtros.desde) {
-    query = query.gte("fecha_registro", filtros.desde);
-  }
-
-  if (filtros.hasta) {
-    query = query.lte("fecha_registro", filtros.hasta);
-  }
-
-  const { data, error } = await query;
-
-  const tbody = document.getElementById("tablaHistorial");
-  tbody.innerHTML = "";
-
-  data.forEach(m => {
-    tbody.innerHTML += `
+  if (!data || data.length === 0) {
+    tablaHistorial.innerHTML = `
       <tr>
-        <td>${new Date(m.fecha_registro).toLocaleDateString()}</td>
-        <td>${m.codigo_movimiento}</td>
-        <td>${m.socios?.codigo_socio || ""}</td>
-        <td>${m.descripcion || ""}</td>
-        <td class="ingreso">${m.ingreso > 0 ? "$" + m.ingreso : ""}</td>
-        <td class="egreso">${m.egreso > 0 ? "$" + m.egreso : ""}</td>
-        <td>$${m.saldo_socio}</td>
-        <td class="${m.estado_validacion === "PENDIENTE" ? "pendiente" : ""}">
-          ${m.estado_validacion}
-        </td>
+        <td colspan="9" style="text-align:center;">Sin movimientos</td>
       </tr>
     `;
+    return;
+  }
+
+  let total = 0;      // 🔴 TOTAL ACUMULADO (LIBRETA)
+  let contador = 1;  // 🔢 NÚMERO CORRELATIVO (N°)
+
+  data.forEach((m) => {
+    const ingreso = Number(m.ingreso || 0);
+    const egreso = Number(m.egreso || 0);
+
+    // ✅ CASO ESPECIAL: SALDO INICIAL
+    if ((m.descripcion || "").toUpperCase() === "SALDO 2025") {
+      total = ingreso - egreso; // normalmente solo ingreso
+    } else {
+      total = total + ingreso - egreso;
+    }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${contador}</td>
+      <td>${new Date(m.fecha_registro).toLocaleDateString("es-EC")}</td>
+      <td>${m.codigo_socio ?? ""}</td>
+      <td>${m.nombres ?? ""}</td>
+      <td>${m.descripcion ?? ""}</td>
+      <td>${ingreso > 0 ? "$ " + ingreso.toFixed(2) : ""}</td>
+      <td>${egreso > 0 ? "$ " + egreso.toFixed(2) : ""}</td>
+      <td><strong>$ ${total.toFixed(2)}</strong></td>
+      <td>${m.estado_validacion ?? ""}</td>
+    `;
+
+    tablaHistorial.appendChild(tr);
+    contador++;
   });
 }
 
-// 🔍 FILTROS
-document.getElementById("btnFiltrar").onclick = () => {
-  cargarHistorial({
-    codigo: document.getElementById("filtroSocio").value,
-    desde: document.getElementById("fechaDesde").value,
-    hasta: document.getElementById("fechaHasta").value
-  });
-};
-
-// CARGA INICIAL
+// cargar al iniciar
 cargarHistorial();
