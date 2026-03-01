@@ -25,6 +25,7 @@ buscarSocio.addEventListener("input", async () => {
   const texto = buscarSocio.value.trim();
 
   listaSocios.innerHTML = "";
+  listaSocios.style.display = "block";
 
   if (texto.length < 2) {
     listaSocios.style.display = "none";
@@ -35,13 +36,8 @@ buscarSocio.addEventListener("input", async () => {
 
   const { data, error } = await supabase
     .from("socios")
-    .select("codigo_socio, nombres, apellidos, cedula")
-    .or(
-      `codigo_socio.ilike.%${texto}%,
-       nombres.ilike.%${texto}%,
-       apellidos.ilike.%${texto}%,
-       cedula.ilike.%${texto}%`
-    )
+    .select("codigo_socio, nombres")
+    .ilike("nombres", `%${texto}%`)
     .limit(10);
 
   if (error) {
@@ -52,23 +48,16 @@ buscarSocio.addEventListener("input", async () => {
   if (!data || data.length === 0) {
     listaSocios.innerHTML =
       "<div class='autocomplete-item'>No encontrado</div>";
-    listaSocios.style.display = "block";
     return;
   }
 
-  listaSocios.style.display = "block";
-
   data.forEach((socio) => {
-    const nombreCompleto =
-      `${socio.nombres ?? ""} ${socio.apellidos ?? ""}`.trim();
-
     const item = document.createElement("div");
     item.className = "autocomplete-item";
-    item.textContent =
-      `${nombreCompleto} (${socio.codigo_socio}) - ${socio.cedula ?? ""}`;
+    item.textContent = `${socio.nombres} (${socio.codigo_socio})`;
 
     item.addEventListener("click", () => {
-      buscarSocio.value = nombreCompleto;
+      buscarSocio.value = socio.nombres;
       inputCodigoSocio.value = socio.codigo_socio;
       listaSocios.innerHTML = "";
       listaSocios.style.display = "none";
@@ -193,7 +182,7 @@ function renderTabla(data) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${contador}</td>
-      <td>${m.numero ?? ""}</td>
+      <td>${m.trx ?? ""}</td>
       <td>${m.codigo_socio ?? ""}</td>
       <td>${m.nombres ?? ""}</td>
       <td>${m.descripcion ?? ""}</td>
