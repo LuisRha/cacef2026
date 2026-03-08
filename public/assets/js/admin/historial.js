@@ -33,15 +33,16 @@ buscarSocio.addEventListener("input", async () => {
 
   console.log("🔍 Buscando socio:", texto);
 
+  const filtro =
+    "codigo_socio.ilike.%" + texto + "%," +
+    "nombres.ilike.%" + texto + "%," +
+    "apellidos.ilike.%" + texto + "%," +
+    "cedula.ilike.%" + texto + "%";
+
   const { data, error } = await supabase
     .from("socios")
     .select("codigo_socio, nombres, apellidos, cedula")
-    .or(
-      `codigo_socio.ilike.%${texto}%,
-       nombres.ilike.%${texto}%,
-       apellidos.ilike.%${texto}%,
-       cedula.ilike.%${texto}%`
-    )
+    .or(filtro)
     .limit(10);
 
   if (error) {
@@ -99,7 +100,6 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
   const fecha = fechaMovimiento.value;
   const tipoMontoSeleccionado = tipoMonto.value;
 
-  // ✅ VALIDACIONES CORRECTAS
   if (
     !codigoSocio ||
     !tipo ||
@@ -132,7 +132,6 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
 
   alert("✅ Movimiento registrado correctamente");
 
-  // limpiar formulario
   descripcionMovimiento.value = "";
   montoMovimiento.value = "";
   fechaMovimiento.value = "";
@@ -160,7 +159,6 @@ async function cargarHistorial() {
   renderTabla(data || []);
 }
 
-
 /* =========================
    RENDER TABLA
 ========================= */
@@ -176,16 +174,15 @@ function renderTabla(data) {
     return;
   }
 
-  let total = 0;      // 🔴 TOTAL ACUMULADO (LIBRETA)
-  let contador = 1;  // 🔢 NÚMERO CORRELATIVO (N°)
+  let total = 0;
+  let contador = 1;
 
   data.forEach((m) => {
     const ingreso = Number(m.ingreso || 0);
     const egreso = Number(m.egreso || 0);
 
-    // ✅ CASO ESPECIAL: SALDO INICIAL
     if ((m.descripcion || "").toUpperCase() === "SALDO 2025") {
-      total = ingreso - egreso; // normalmente solo ingreso
+      total = ingreso - egreso;
     } else {
       total = total + ingreso - egreso;
     }
@@ -209,5 +206,4 @@ function renderTabla(data) {
   });
 }
 
-// cargar al iniciar
 cargarHistorial();
