@@ -27,95 +27,37 @@
 
   <!-- CONTENIDO -->
   <main class="admin-content">
-  <h2 style="text-align:center;">CAJA DE AHORRO Y CRÉDITO FAMILIAR</h2>
+    <h2 style="text-align:center;">CAJA DE AHORRO Y CRÉDITO FAMILIAR</h2>
 
-<table border="1" width="100%" style="border-collapse:collapse; text-align:center; font-size:14px;">
+    <table border="1" width="100%" style="border-collapse:collapse; text-align:center; font-size:14px;">
 
-<tr style="background:#2c3e50;color:white;">
-<th>N°</th>
-<th>APELLIDOS Y NOMBRES</th>
-<th>CAJA</th>
-<th>CUOTA INICIAL</th>
-<th>CUENTA DE AHORRO</th>
-<th>BENEFICIOS CONSOLIDADO</th>
-<th>INGRESO INTERÉS</th>
-<th>EGRESO</th>
-<th>INTERÉS PENDIENTE</th>
-<th>DEUDA ACTUAL</th>
-<th>TOTAL</th>
-<th>SCORE</th>
-<th>OBSERVACIONES</th>
-</tr>
+      <tr style="background:#2c3e50;color:white;">
+        <th>N°</th>
+        <th>APELLIDOS Y NOMBRES</th>
+        <th>CAJA</th>
+        <th>CUOTA INICIAL</th>
+        <th>CUENTA DE AHORRO</th>
+        <th>BENEFICIOS CONSOLIDADO</th>
+        <th>INGRESO INTERÉS</th>
+        <th>EGRESO</th>
+        <th>INTERÉS PENDIENTE</th>
+        <th>DEUDA ACTUAL</th>
+        <th>TOTAL</th>
+        <th>SCORE</th>
+        <th>OBSERVACIONES</th>
+      </tr>
 
-<tr>
-<td>1</td>
-<td>Huatatoca Alvarado Casimiro</td>
+      <!-- 🔥 AQUÍ SE CARGA DESDE LA BD -->
+      <tbody id="tablaSocios"></tbody>
 
-<td rowspan="4">$148.96</td>
-
-<td>$30.00</td>
-<td></td>
-<td>$20.71</td>
-<td>$5.00</td>
-<td>$3.00</td>
-<td>$0.00</td>
-<td>$30.00</td>
-<td>$50.71</td>
-<td>12.0</td>
-<td></td>
-</tr>
-
-<tr>
-<td>2</td>
-<td>Alvarado Huatatoca Eletvina Lucinda</td>
-
-<td>$30.00</td>
-<td>$0.30</td>
-<td>$0.71</td>
-<td>$0.00</td>
-<td>$0.00</td>
-<td>$0.00</td>
-<td>$0.00</td>
-<td>$31.01</td>
-<td>10.0</td>
-<td></td>
-</tr>
-
-<tr>
-<td>3</td>
-<td>Huatatoca Alvarado Jesica Dalila</td>
-
-<td>$30.00</td>
-<td></td>
-<td>$2.91</td>
-<td>$10.00</td>
-<td>$6.00</td>
-<td>$0.00</td>
-<td>$60.00</td>
-<td>$32.91</td>
-<td>14.0</td>
-<td></td>
-</tr>
-
-<tr>
-<td>4</td>
-<td>Huatatoca Alvarado Jeferson Francisco</td>
-
-<td>$30.00</td>
-<td>$20.00</td>
-<td>$31.66</td>
-<td>$0.00</td>
-<td>$30.00</td>
-<td>$0.00</td>
-<td>$300.00</td>
-<td>$81.66</td>
-<td>10.0</td>
-<td></td>
-</tr>
-
-</table>
+    </table>
   </main>
 
+  <!-- 🔴 SUPABASE -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+  <!-- TU SCRIPT -->
   <script type="module" src="../assets/js/admin/dashboard.js"></script>
+
 </body>
 </html>

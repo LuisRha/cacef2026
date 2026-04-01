@@ -22,7 +22,7 @@ const tablaHistorial = document.getElementById("tablaHistorial");
    AUTOCOMPLETAR SOCIO
 ========================= */
 buscarSocio.addEventListener("input", async () => {
-  const texto = buscarSocio.value.trim();
+  const texto = buscarSocio.value.trim().toLowerCase();
 
   listaSocios.innerHTML = "";
   listaSocios.style.display = "block";
@@ -32,8 +32,26 @@ buscarSocio.addEventListener("input", async () => {
     return;
   }
 
-  console.log("🔍 Buscando socio:", texto);
+  console.log("🔍 Buscando:", texto);
 
+  // 🔥 SI ES CAJA
+  if (texto === "caja") {
+    const item = document.createElement("div");
+    item.className = "autocomplete-item";
+    item.textContent = "CAJA (Sistema)";
+
+    item.addEventListener("click", () => {
+      buscarSocio.value = "CAJA";
+      inputCodigoSocio.value = "CAJA";
+      listaSocios.innerHTML = "";
+      listaSocios.style.display = "none";
+    });
+
+    listaSocios.appendChild(item);
+    return;
+  }
+
+  // 🔹 BUSCAR SOCIOS NORMAL
   const { data, error } = await supabase
     .from("socios")
     .select("codigo_socio, nombres")
@@ -67,13 +85,15 @@ buscarSocio.addEventListener("input", async () => {
   });
 });
 
-// cerrar autocomplete al hacer click fuera
+
+// cerrar autocomplete
 document.addEventListener("click", (e) => {
   if (!buscarSocio.contains(e.target) && !listaSocios.contains(e.target)) {
     listaSocios.innerHTML = "";
     listaSocios.style.display = "none";
   }
 });
+
 
 /* =========================
    REGISTRAR MOVIMIENTO
@@ -88,7 +108,7 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
   const fecha = fechaMovimiento.value;
   const tipoMontoSeleccionado = tipoMonto.value;
 
-  // ✅ VALIDACIONES CORRECTAS
+  // ✅ VALIDACIÓN
   if (
     !codigoSocio ||
     !tipo ||
@@ -104,6 +124,39 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
   const ingreso = tipoMontoSeleccionado === "INGRESO" ? monto : 0;
   const egreso = tipoMontoSeleccionado === "EGRESO" ? monto : 0;
 
+  // 🔥 SI ES CAJA
+  console.log("👉 codigoSocio:", codigoSocio);
+  if (codigoSocio.trim().toLowerCase() === "caja") {
+
+    const { error } = await supabase
+      .from("caja")
+      .insert([{
+        monto: ingreso > 0 ? ingreso : -egreso,
+        descripcion: descripcion || tipo,
+        fecha: fecha
+      }]);
+
+    if (error) {
+      console.error("❌ Error registrando en caja:", error);
+      alert("❌ Error al registrar en CAJA");
+      return;
+    }
+
+    alert("✅ Movimiento registrado en CAJA");
+
+    // limpiar
+    buscarSocio.value = "";
+    inputCodigoSocio.value = "";
+    descripcionMovimiento.value = "";
+    montoMovimiento.value = "";
+    fechaMovimiento.value = "";
+    tipoMovimiento.value = "";
+    tipoMonto.value = "INGRESO";
+
+    return;
+  }
+
+  // 🔹 SOCIO NORMAL
   const { error } = await supabase.rpc("insertar_movimiento_por_codigo", {
     p_codigo_socio: codigoSocio,
     p_tipo: tipo,
@@ -121,7 +174,9 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
 
   alert("✅ Movimiento registrado correctamente");
 
-  // limpiar formulario
+  // limpiar
+  buscarSocio.value = "";
+  inputCodigoSocio.value = "";
   descripcionMovimiento.value = "";
   montoMovimiento.value = "";
   fechaMovimiento.value = "";

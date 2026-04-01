@@ -22,26 +22,42 @@ const tablaHistorial = document.getElementById("tablaHistorial");
    AUTOCOMPLETAR SOCIO
 ========================= */
 buscarSocio.addEventListener("input", async () => {
-  const texto = buscarSocio.value.trim();
+  const texto = buscarSocio.value.trim().toLowerCase();
 
   listaSocios.innerHTML = "";
 
-  if (texto.length < 2) {
+  if (texto.length < 1) {
     listaSocios.style.display = "none";
     return;
+  }
+
+  listaSocios.style.display = "block";
+
+  // 🔥 MOSTRAR CAJA SIEMPRE SI COINCIDE
+  if ("caja".includes(texto)) {
+    const itemCaja = document.createElement("div");
+    itemCaja.className = "autocomplete-item";
+    itemCaja.textContent = "CAJA (Sistema)";
+
+    itemCaja.addEventListener("click", () => {
+      buscarSocio.value = "CAJA";
+      inputCodigoSocio.value = "CAJA";
+      listaSocios.innerHTML = "";
+      listaSocios.style.display = "none";
+    });
+
+    listaSocios.appendChild(itemCaja);
   }
 
   console.log("🔍 Buscando socio:", texto);
 
   const filtro =
     "codigo_socio.ilike.%" + texto + "%," +
-    "nombres.ilike.%" + texto + "%," +
-    "apellidos.ilike.%" + texto + "%," +
-    "cedula.ilike.%" + texto + "%";
+    "nombres.ilike.%" + texto + "%";
 
   const { data, error } = await supabase
     .from("socios")
-    .select("codigo_socio, nombres, apellidos, cedula")
+    .select("codigo_socio, nombres")
     .or(filtro)
     .limit(10);
 
@@ -50,33 +66,30 @@ buscarSocio.addEventListener("input", async () => {
     return;
   }
 
-  if (!data || data.length === 0) {
-    listaSocios.innerHTML =
-      "<div class='autocomplete-item'>No encontrado</div>";
-    listaSocios.style.display = "block";
-    return;
+  // 🔴 AGREGAR SOCIOS SI EXISTEN
+  if (data && data.length > 0) {
+    data.forEach((socio) => {
+      const item = document.createElement("div");
+      item.className = "autocomplete-item";
+      item.textContent =
+        `${socio.nombres} (${socio.codigo_socio})`;
+
+      item.addEventListener("click", () => {
+        buscarSocio.value = socio.nombres;
+        inputCodigoSocio.value = socio.codigo_socio;
+        listaSocios.innerHTML = "";
+        listaSocios.style.display = "none";
+      });
+
+      listaSocios.appendChild(item);
+    });
   }
 
-  listaSocios.style.display = "block";
-
-  data.forEach((socio) => {
-    const nombreCompleto =
-      `${socio.nombres ?? ""} ${socio.apellidos ?? ""}`.trim();
-
-    const item = document.createElement("div");
-    item.className = "autocomplete-item";
-    item.textContent =
-      `${nombreCompleto} (${socio.codigo_socio}) - ${socio.cedula ?? ""}`;
-
-    item.addEventListener("click", () => {
-      buscarSocio.value = nombreCompleto;
-      inputCodigoSocio.value = socio.codigo_socio;
-      listaSocios.innerHTML = "";
-      listaSocios.style.display = "none";
-    });
-
-    listaSocios.appendChild(item);
-  });
+  // 🔴 SI NO HAY NADA (NI CAJA NI SOCIOS)
+  if (listaSocios.innerHTML === "") {
+    listaSocios.innerHTML =
+      "<div class='autocomplete-item'>No encontrado</div>";
+  }
 });
 
 // cerrar autocomplete al hacer click fuera
@@ -100,6 +113,7 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
   const fecha = fechaMovimiento.value;
   const tipoMontoSeleccionado = tipoMonto.value;
 
+  // ✅ VALIDACIÓN
   if (
     !codigoSocio ||
     !tipo ||
@@ -115,6 +129,47 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
   const ingreso = tipoMontoSeleccionado === "INGRESO" ? monto : 0;
   const egreso = tipoMontoSeleccionado === "EGRESO" ? monto : 0;
 
+  console.log("👉 codigoSocio:", codigoSocio);
+
+  // =========================
+  // 🔥 SI ES CAJA
+  // =========================
+  if (codigoSocio.toLowerCase() === "caja") {
+
+    const fechaISO = new Date(fecha).toISOString();
+
+    const { error } = await supabase
+      .from("caja")
+      .insert([{
+        monto: ingreso > 0 ? ingreso : -egreso,
+        descripcion: descripcion || tipo,
+        fecha: fechaISO
+      }]);
+
+    if (error) {
+      console.error("❌ Error CAJA:", error);
+      alert("❌ Error al registrar en CAJA");
+      return;
+    }
+
+    alert("✅ Movimiento registrado en CAJA");
+
+    // limpiar
+    buscarSocio.value = "";
+    inputCodigoSocio.value = "";
+    descripcionMovimiento.value = "";
+    montoMovimiento.value = "";
+    fechaMovimiento.value = "";
+    tipoMovimiento.value = "";
+    tipoMonto.value = "INGRESO";
+
+    cargarHistorial();
+    return; // 🔥 IMPORTANTE
+  }
+
+  // =========================
+  // 🔹 SOCIO NORMAL
+  // =========================
   const { error } = await supabase.rpc("insertar_movimiento_por_codigo", {
     p_codigo_socio: codigoSocio,
     p_tipo: tipo,
@@ -132,6 +187,9 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
 
   alert("✅ Movimiento registrado correctamente");
 
+  // limpiar
+  buscarSocio.value = "";
+  inputCodigoSocio.value = "";
   descripcionMovimiento.value = "";
   montoMovimiento.value = "";
   fechaMovimiento.value = "";
@@ -140,23 +198,61 @@ btnRegistrarMovimiento.addEventListener("click", async () => {
 
   cargarHistorial();
 });
-
 /* =========================
    CARGAR HISTORIAL
 ========================= */
 async function cargarHistorial() {
   console.log("📥 Cargando historial...");
 
-  const { data, error } = await supabase
+  // 🔹 historial normal
+  const { data: historial, error: errorHistorial } = await supabase
     .from("v_historial_excel")
     .select("*");
 
-  if (error) {
-    console.error("❌ Error cargando historial:", error);
+  if (errorHistorial) {
+    console.error("❌ Error historial:", errorHistorial);
     return;
   }
 
-  renderTabla(data || []);
+  // 🔥 CAJA
+  const { data: caja, error: errorCaja } = await supabase
+    .from("caja")
+    .select("*");
+
+  if (errorCaja) {
+    console.error("❌ Error caja:", errorCaja);
+  }
+
+  let data = [];
+
+  // agregar historial
+  if (historial) {
+    data = [...historial];
+  }
+
+  // 🔥 transformar caja
+  if (caja) {
+    const cajaTransformada = caja.map((c) => ({
+      numero: "CAJA",
+      codigo_socio: "CAJA",
+      nombres: "Caja CACEF",
+      descripcion: c.descripcion,
+      fecha_registro: c.fecha,
+      ingreso: c.monto > 0 ? c.monto : 0,
+      egreso: c.monto < 0 ? Math.abs(c.monto) : 0,
+      estado_validacion: c.tipo || ""
+    }));
+
+    data = [...data, ...cajaTransformada];
+  }
+
+  // 🔥 ORDENAR POR FECHA
+  data.sort((a, b) => {
+    return new Date(a.fecha_registro) - new Date(b.fecha_registro);
+  });
+
+  // 👉 render
+  renderTabla(data);
 }
 
 /* =========================
@@ -168,7 +264,7 @@ function renderTabla(data) {
   if (!data || data.length === 0) {
     tablaHistorial.innerHTML = `
       <tr>
-        <td colspan="9" style="text-align:center;">Sin movimientos</td>
+        <td colspan="10" style="text-align:center;">Sin movimientos</td>
       </tr>
     `;
     return;
@@ -190,7 +286,7 @@ function renderTabla(data) {
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${contador}</td>
-      <td>${m.numero ?? ""}</td>
+      <td>${m.trx ?? ""}</td>
       <td>${m.codigo_socio ?? ""}</td>
       <td>${m.nombres ?? ""}</td>
       <td>${m.descripcion ?? ""}</td>
@@ -206,4 +302,5 @@ function renderTabla(data) {
   });
 }
 
+// 🚀 ejecutar
 cargarHistorial();
