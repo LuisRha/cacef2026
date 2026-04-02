@@ -28,7 +28,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
   window.location.href = "/index.html";
 });
 
-
+// 🚀 FUNCIÓN PRINCIPAL
 async function cargarSocios() {
 
   // 🔹 TRAER SOCIOS
@@ -52,33 +52,36 @@ async function cargarSocios() {
     return;
   }
 
-  // 🔥 CALCULAR TOTAL CAJA
+  // 🔥 TOTAL CAJA
   let totalCaja = 0;
-  if (cajaData) {
-    cajaData.forEach(c => {
-      totalCaja += Number(c.monto || 0);
-    });
-  }
+  cajaData?.forEach(c => {
+    totalCaja += Number(c.monto || 0);
+  });
 
-  // 🔥 TRAER CUOTAS INICIALES
+  // 🔥 TRAER HISTORIAL
   const { data: cuotasData } = await supabase
     .from("historial_movimientos")
-    .select("socio_id, ingreso, descripcion");
+    .select("codigo_socio, ingreso, descripcion")
 
-  // 🔥 AGRUPAR CUOTAS POR SOCIO
+  // 🔥 AGRUPAR CUOTAS
   let cuotasPorSocio = {};
 
-  if (cuotasData) {
-    cuotasData.forEach(m => {
-      if ((m.descripcion || "").toUpperCase().includes("INICIAL")) {
-        if (!cuotasPorSocio[m.socio_id]) {
-          cuotasPorSocio[m.socio_id] = 0;
-        }
-        cuotasPorSocio[m.socio_id] += Number(m.ingreso || 0);
-      }
-    });
-  }
+  cuotasData?.forEach(m => {
+    const texto = (m.descripcion || "").toUpperCase();
 
+    if (texto.includes("INICIAL")) {
+      const key = m.codigo_socio;
+
+      cuotasPorSocio[key] =
+        (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
+    }
+  });
+
+  // 🔍 DEBUG IMPORTANTE
+  console.log("CUOTAS POR SOCIO:", cuotasPorSocio);
+  console.log("SOCIOS IDS:", data.map(s => s.id));
+
+  // 🔹 TABLA
   const tabla = document.getElementById("tablaSocios");
 
   if (!tabla) {
@@ -89,21 +92,20 @@ async function cargarSocios() {
   const totalSocios = data.length;
   let html = "";
 
-  // 🔥 RENDER TABLA
+  // 🔥 RENDER
   data.forEach((socio, index) => {
+
+    const cuota = cuotasPorSocio[socio.codigo_socio] || 0;
 
     html += `<tr>`;
 
     html += `<td>${index + 1}</td>`;
     html += `<td>${socio.nombres}</td>`;
 
-    // 🔥 CAJA solo una vez
+    // 🔥 CAJA
     if (index === 0) {
       html += `<td rowspan="${totalSocios}">$${totalCaja.toFixed(2)}</td>`;
     }
-
-    // 🔥 CUOTA INICIAL DINÁMICA
-    const cuota = cuotasPorSocio[socio.id] || 0;
 
     html += `
       <td>$${cuota.toFixed(2)}</td>

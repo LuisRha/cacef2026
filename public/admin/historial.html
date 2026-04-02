@@ -27,33 +27,54 @@
   <!-- =========================
        REGISTRAR MOVIMIENTO
   ========================== -->
-  <h2>Registrar movimiento</h2>
+  <!-- =========================
+       REGISTRAR MOVIMIENTO
+  ========================== -->
+<h2>Registrar movimiento</h2>
 
-  <div class="form-movimiento">
+<div class="form-movimiento">
 
-    <!-- BUSCADOR DE SOCIO -->
-    <div class="autocomplete-container">
-      <input
-        type="text"
-        id="buscarSocio"
-        placeholder="Buscar socio por nombre o cédula"
-        autocomplete="off"
-      >
-      <div id="listaSocios" class="autocomplete-list"></div>
-    </div>
+  <!-- BUSCADOR DE SOCIO -->
+  <div class="autocomplete-container">
+    <input
+      type="text"
+      id="buscarSocio"
+      placeholder="Buscar socio por nombre o cédula"
+      autocomplete="off"
+    >
+    <div id="listaSocios" class="autocomplete-list"></div>
+  </div>
 
-    <!-- CÓDIGO SOCIO (OCULTO, USO INTERNO) -->
-    <input type="hidden" id="codigoSocio">
+  <!-- CÓDIGO SOCIO (OCULTO, USO INTERNO) -->
+  <input type="hidden" id="codigoSocio">
 
-    <select id="tipoMovimiento">
-      <option value="">Tipo de movimiento</option>
-      <option value="DEPOSITO">DEPÓSITO</option>
-      <option value="RETIRO">RETIRO</option>
-      <option value="PAGO">PAGO</option>
-      <option value="CREDITO">CRÉDITO</option>
-      <option value="AJUSTE">AJUSTE</option>
-    </select>
+  <!-- TIPO DE MOVIMIENTO -->
+  <select id="tipoMovimiento">
+    <option value="INGRESO">INGRESO</option>
+    <option value="EGRESO">EGRESO</option>
+  </select>
 
+  <!-- TIPO DE APORTE (solo visual) -->
+  <input
+  type="text"
+  id="tipoAporte"
+  placeholder="Tipo de aporte"
+  list="listaAportes"
+>
+
+<datalist id="listaAportes">
+  <option value="CUOTA_INICIAL">
+  <option value="CUENTA_AHORRO">
+  <option value="BENEFICIO_CONSOLIDADO">
+  <option value="PAGO_INTERES">
+  <option value="PAGO_CREDITO">
+  <option value="PAGO_INTERES">
+  <option value="DAR_CREDITO">
+  <option value="EGRESO/CAJA">
+</datalist>
+
+  <!-- EGRESOS -->
+  
     <input
       type="text"
       id="descripcionMovimiento"
