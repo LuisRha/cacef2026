@@ -100,7 +100,7 @@ async function cargarSocios() {
       cuentas.CUENTA_AHORRO[id] = (cuentas.CUENTA_AHORRO[id] || 0) + ingreso;
     }
 
-    if (tipo === "BENEFICIOS_CONSOLIDADO") {
+    if (tipo === "BENEFICIO_CONSOLIDADO") {
       cuentas.BENEFICIO_CONSOLIDADO[id] = (cuentas.BENEFICIO_CONSOLIDADO[id] || 0) + ingreso;
     }
 
@@ -158,7 +158,7 @@ console.log("CUENTAS:", cuentas);
     const interesPendiente = deuda * 0.10;
 
     // 🔥 NUEVO → TOTAL REAL
-    const total = cuota + ahorro + beneficio - deuda;
+    const total = cuota + ahorro + beneficio - egreso - deuda;
 
     html += `<tr>`;
 
