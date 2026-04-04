@@ -113,13 +113,25 @@ async function cargarSocios() {
     }
 
     // 🔥 CORRECCIÓN IMPORTANTE
-    if (tipo === "PRESTAMO") {
-      cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + ingreso;
-    }
+if (tipo === "PRESTAMO") {
 
-  });
+  // 💰 préstamo (suma deuda)
+  if (ingreso > 0) {
+    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + ingreso;
+  }
 
-  console.log("CUENTAS:", cuentas);
+  // 💸 pago (resta deuda)
+  if (egreso > 0) {
+    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) - egreso;
+  }
+
+}
+
+});
+
+console.log("CUENTAS:", cuentas);
+
+
 
   // 🔹 TABLA
   const tabla = document.getElementById("tablaSocios");
