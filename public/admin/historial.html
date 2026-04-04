@@ -48,30 +48,16 @@
   <!-- CÓDIGO SOCIO (OCULTO, USO INTERNO) -->
   <input type="hidden" id="codigoSocio">
 
-  <!-- TIPO DE MOVIMIENTO -->
-  <select id="tipoMovimiento">
-    <option value="INGRESO">INGRESO</option>
-    <option value="EGRESO">EGRESO</option>
-  </select>
 
-  <!-- TIPO DE APORTE (solo visual) -->
-  <input
-  type="text"
-  id="tipoAporte"
-  placeholder="Tipo de aporte"
-  list="listaAportes"
->
-
-<datalist id="listaAportes">
-  <option value="CUOTA_INICIAL">
-  <option value="CUENTA_AHORRO">
-  <option value="BENEFICIO_CONSOLIDADO">
-  <option value="PAGO_INTERES">
-  <option value="PAGO_CREDITO">
-  <option value="PAGO_INTERES">
-  <option value="DAR_CREDITO">
-  <option value="EGRESO/CAJA">
-</datalist>
+<!-- TIPO DE MOVIMIENTO (ÚNICO Y REAL) -->
+<select id="tipoMovimiento">
+  <option value="CUOTA_INICIAL">Cuota Inicial</option>
+  <option value="CUENTA_AHORRO">Cuenta de Ahorro</option>
+  <option value="BENEFICIOS_CONSOLIDADO">Beneficios Consolidado</option>
+  <option value="INGRESO_INTERES">Ingreso Interés</option>
+  <option value="PRESTAMO">Préstamo</option>
+  <option value="EGRESO">Egreso</option>
+</select>
 
   <!-- EGRESOS -->
   
