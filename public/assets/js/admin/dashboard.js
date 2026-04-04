@@ -58,10 +58,10 @@ async function cargarSocios() {
     totalCaja += Number(c.monto || 0);
   });
 
-  // 🔥 TRAER HISTORIAL (CORRECTO)
+  // 🔥 TRAER HISTORIAL
   const { data: movimientos, error: errorMov } = await supabase
     .from("historial_movimientos")
-    .select("socio_id, ingreso, tipo_movimiento");
+    .select("socio_id, ingreso, egreso, tipo_movimiento");
 
   if (errorMov) {
     console.error("Error historial:", errorMov);
@@ -70,24 +70,55 @@ async function cargarSocios() {
 
   console.log("MOVIMIENTOS:", movimientos);
 
-  // 🔥 AGRUPAR CUOTA INICIAL
-  let cuotasPorSocio = {};
+  // 🔥 MAPAS POR CUENTA
+  let cuentas = {
+    CUOTA_INICIAL: {},
+    CUENTA_AHORRO: {},
+    BENEFICIO_CONSOLIDADO: {},
+    INGRESO_INTERES: {},
+    EGRESO: {},
+    PRESTAMO: {}
+  };
 
+  // 🔥 AGRUPAR TODO
   movimientos?.forEach(m => {
 
     const tipo = (m.tipo_movimiento || "").trim().toUpperCase();
+    const id = m.socio_id;
 
+    if (!id) return;
+
+    const ingreso = Number(m.ingreso || 0);
+    const egreso = Number(m.egreso || 0);
+
+    // 🔥 CUENTAS
     if (tipo === "CUOTA_INICIAL") {
+      cuentas.CUOTA_INICIAL[id] = (cuentas.CUOTA_INICIAL[id] || 0) + ingreso;
+    }
 
-      const key = m.socio_id; // 🔥 UUID
+    if (tipo === "CUENTA_AHORRO") {
+      cuentas.CUENTA_AHORRO[id] = (cuentas.CUENTA_AHORRO[id] || 0) + ingreso;
+    }
 
-      cuotasPorSocio[key] =
-        (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
+    if (tipo === "BENEFICIO_CONSOLIDADO") {
+      cuentas.BENEFICIO_CONSOLIDADO[id] = (cuentas.BENEFICIO_CONSOLIDADO[id] || 0) + ingreso;
+    }
+
+    if (tipo === "INGRESO_INTERES") {
+      cuentas.INGRESO_INTERES[id] = (cuentas.INGRESO_INTERES[id] || 0) + ingreso;
+    }
+
+    if (tipo === "EGRESO") {
+      cuentas.EGRESO[id] = (cuentas.EGRESO[id] || 0) + egreso;
+    }
+
+    if (tipo === "PRESTAMO") {
+      cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + egreso;
     }
 
   });
 
-  console.log("MAPA CUOTAS:", cuotasPorSocio);
+  console.log("CUENTAS:", cuentas);
 
   // 🔹 TABLA
   const tabla = document.getElementById("tablaSocios");
@@ -103,27 +134,33 @@ async function cargarSocios() {
   // 🔥 RENDER
   socios.forEach((socio, index) => {
 
-    // 🔥 CLAVE CORRECTA (UUID)
-    const cuota = cuotasPorSocio[socio.id] || 0;
+    const id = socio.id;
+
+    const cuota = cuentas.CUOTA_INICIAL[id] || 0;
+    const ahorro = cuentas.CUENTA_AHORRO[id] || 0;
+    const beneficio = cuentas.BENEFICIO_CONSOLIDADO[id] || 0;
+    const interes = cuentas.INGRESO_INTERES[id] || 0;
+    const egreso = cuentas.EGRESO[id] || 0;
+    const deuda = cuentas.PRESTAMO[id] || 0;
 
     html += `<tr>`;
 
     html += `<td>${index + 1}</td>`;
     html += `<td>${socio.nombres}</td>`;
 
-    // 🔥 CAJA
+    // 🔥 CAJA GLOBAL
     if (index === 0) {
       html += `<td rowspan="${totalSocios}">$${totalCaja.toFixed(2)}</td>`;
     }
 
     html += `
       <td>$${cuota.toFixed(2)}</td>
-      <td>$0.00</td>
-      <td>$0.00</td>
-      <td>$0.00</td>
-      <td>$0.00</td>
-      <td>$0.00</td>
-      <td>$0.00</td>
+      <td>$${ahorro.toFixed(2)}</td>
+      <td>$${beneficio.toFixed(2)}</td>
+      <td>$${interes.toFixed(2)}</td>
+      <td>$${egreso.toFixed(2)}</td>
+      <td>$0.00</td> <!-- INTERES PENDIENTE -->
+      <td>$${deuda.toFixed(2)}</td>
       <td>$0.00</td>
       <td>0</td>
       <td></td>
