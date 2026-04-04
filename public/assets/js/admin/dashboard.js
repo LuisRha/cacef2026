@@ -112,17 +112,17 @@ async function cargarSocios() {
       cuentas.EGRESO[id] = (cuentas.EGRESO[id] || 0) + egreso;
     }
 
-    // 🔥 CORRECCIÓN IMPORTANTE
+// 🔥 CORRECCIÓN IMPORTANTE
 if (tipo === "PRESTAMO") {
 
-  // 💰 préstamo (suma deuda)
-  if (ingreso > 0) {
-    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) - ingreso;
+  // 💰 préstamo (aumenta deuda)
+  if (egreso > 0) {
+    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + egreso;
   }
 
-  // 💸 pago (resta deuda)
-  if (egreso > 0) {
-    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) - egreso;
+  // 💸 pago (reduce deuda)
+  if (ingreso > 0) {
+    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) - ingreso;
   }
 
 }
