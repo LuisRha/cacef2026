@@ -145,7 +145,7 @@ async function cargarSocios() {
     const deuda = cuentas.PRESTAMO[id] || 0;
 
     // 🔥 NUEVO → TOTAL REAL
-    const total = cuota + ahorro + beneficio + interes - egreso - deuda;
+    const total = cuota + ahorro + beneficio - deuda;
 
     html += `<tr>`;
 
