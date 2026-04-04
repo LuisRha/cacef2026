@@ -61,21 +61,22 @@ async function cargarSocios() {
   // 🔥 TRAER HISTORIAL
   const { data: cuotasData } = await supabase
     .from("historial_movimientos")
-    .select("codigo_socio, ingreso, descripcion")
+    .select("socio_id, ingreso, tipo_movimiento")
 
   // 🔥 AGRUPAR CUOTAS
   let cuotasPorSocio = {};
 
-  cuotasData?.forEach(m => {
-    const texto = (m.descripcion || "").toUpperCase();
+cuotasData?.forEach(m => {
 
-    if (texto.includes("INICIAL")) {
-      const key = m.codigo_socio;
+  if (m.tipo_movimiento === "CUOTA_INICIAL") {
 
-      cuotasPorSocio[key] =
-        (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
-    }
-  });
+    const key = m.socio_id;
+
+    cuotasPorSocio[key] =
+      (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
+  }
+
+});
 
   // 🔍 DEBUG IMPORTANTE
   console.log("CUOTAS POR SOCIO:", cuotasPorSocio);
@@ -95,7 +96,7 @@ async function cargarSocios() {
   // 🔥 RENDER
   data.forEach((socio, index) => {
 
-    const cuota = cuotasPorSocio[socio.codigo_socio] || 0;
+    const cuota = cuotasPorSocio[socio.id] || 0;
 
     html += `<tr>`;
 
