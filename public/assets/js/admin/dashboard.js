@@ -77,7 +77,8 @@ async function cargarSocios() {
     BENEFICIO_CONSOLIDADO: {},
     INGRESO_INTERES: {},
     EGRESO: {},
-    PRESTAMO: {}
+    PRESTAMO: {},
+    PAGO_INTERES: {} // 🔥 NUEVO (AÑADIDO)
   };
 
   // 🔥 AGRUPAR TODO
@@ -112,26 +113,27 @@ async function cargarSocios() {
       cuentas.EGRESO[id] = (cuentas.EGRESO[id] || 0) + egreso;
     }
 
-// 🔥 CORRECCIÓN IMPORTANTE
-if (tipo === "PRESTAMO") {
+    // 🔥 PRÉSTAMO
+    if (tipo === "PRESTAMO") {
 
-  // 💰 préstamo (aumenta deuda)
-  if (egreso > 0) {
-    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + egreso;
-  }
+      if (egreso > 0) {
+        cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + egreso;
+      }
 
-  // 💸 pago (reduce deuda)
-  if (ingreso > 0) {
-    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) - ingreso;
-  }
+      if (ingreso > 0) {
+        cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) - ingreso;
+      }
+    }
 
-}
+    // 🔥 NUEVO → PAGO DE INTERÉS
+    if (tipo === "PAGO_INTERES") {
+      cuentas.PAGO_INTERES[id] =
+        (cuentas.PAGO_INTERES[id] || 0) + ingreso;
+    }
 
-});
+  });
 
-console.log("CUENTAS:", cuentas);
-
-
+  console.log("CUENTAS:", cuentas);
 
   // 🔹 TABLA
   const tabla = document.getElementById("tablaSocios");
@@ -155,9 +157,18 @@ console.log("CUENTAS:", cuentas);
     const interes = cuentas.INGRESO_INTERES[id] || 0;
     const egreso = cuentas.EGRESO[id] || 0;
     const deuda = cuentas.PRESTAMO[id] || 0;
-    const interesPendiente = deuda * 0.10;
 
-    // 🔥 NUEVO → TOTAL REAL
+    // 🔥 NUEVO SISTEMA DE INTERÉS (AÑADIDO)
+    const interesGenerado = deuda > 0 ? deuda * 0.10 : 0;
+    const interesPagado = cuentas.PAGO_INTERES[id] || 0;
+
+    let interesPendienteReal = interesGenerado - interesPagado;
+
+    if (interesPendienteReal < 0) {
+      interesPendienteReal = 0;
+    }
+
+    // 🔥 TOTAL
     const total = cuota + ahorro + beneficio - egreso - deuda;
 
     html += `<tr>`;
@@ -165,7 +176,6 @@ console.log("CUENTAS:", cuentas);
     html += `<td>${index + 1}</td>`;
     html += `<td>${socio.nombres}</td>`;
 
-    // 🔥 CAJA GLOBAL
     if (index === 0) {
       html += `<td rowspan="${totalSocios}">$${totalCaja.toFixed(2)}</td>`;
     }
@@ -176,9 +186,9 @@ console.log("CUENTAS:", cuentas);
       <td>$${beneficio.toFixed(2)}</td>
       <td>$${interes.toFixed(2)}</td>
       <td>$${egreso.toFixed(2)}</td>
-      <td>$${interesPendiente.toFixed(2)}</td>
+      <td>$${interesPendienteReal.toFixed(2)}</td> <!-- 🔥 CAMBIO -->
       <td>$${deuda.toFixed(2)}</td>
-      <td>$${total.toFixed(2)}</td> <!-- 🔥 YA FUNCIONA -->
+      <td>$${total.toFixed(2)}</td>
       <td>0</td>
       <td></td>
     `;
