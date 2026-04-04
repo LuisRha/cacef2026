@@ -93,9 +93,22 @@ async function cargarSocios() {
     const egreso = Number(m.egreso || 0);
 
     // 🔥 CUENTAS
-    if (tipo === "CUOTA_INICIAL") {
-      cuentas.CUOTA_INICIAL[id] = (cuentas.CUOTA_INICIAL[id] || 0) + ingreso;
-    }
+    // 🔥 CUOTA INICIAL (CORREGIDO)
+if (tipo === "CUOTA_INICIAL") {
+
+  // 💰 suma ingresos
+  if (ingreso > 0) {
+    cuentas.CUOTA_INICIAL[id] =
+      (cuentas.CUOTA_INICIAL[id] || 0) + ingreso;
+  }
+
+  // 💸 resta egresos
+  if (egreso > 0) {
+    cuentas.CUOTA_INICIAL[id] =
+      (cuentas.CUOTA_INICIAL[id] || 0) - egreso;
+  }
+
+  }
 
     if (tipo === "CUENTA_AHORRO") {
       cuentas.CUENTA_AHORRO[id] = (cuentas.CUENTA_AHORRO[id] || 0) + ingreso;
