@@ -143,6 +143,7 @@ async function cargarSocios() {
     const interes = cuentas.INGRESO_INTERES[id] || 0;
     const egreso = cuentas.EGRESO[id] || 0;
     const deuda = cuentas.PRESTAMO[id] || 0;
+    const interesPendiente = deuda * 0.10;
 
     // 🔥 NUEVO → TOTAL REAL
     const total = cuota + ahorro + beneficio - deuda;
@@ -163,7 +164,7 @@ async function cargarSocios() {
       <td>$${beneficio.toFixed(2)}</td>
       <td>$${interes.toFixed(2)}</td>
       <td>$${egreso.toFixed(2)}</td>
-      <td>$0.00</td> <!-- INTERES PENDIENTE -->
+      <td>$${interesPendiente.toFixed(2)}</td>
       <td>$${deuda.toFixed(2)}</td>
       <td>$${total.toFixed(2)}</td> <!-- 🔥 YA FUNCIONA -->
       <td>0</td>
