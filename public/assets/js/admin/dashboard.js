@@ -59,30 +59,35 @@ async function cargarSocios() {
   });
 
   // 🔥 TRAER HISTORIAL (CORRECTO)
-  const { data: movimientos } = await supabase
+  const { data: movimientos, error: errorMov } = await supabase
     .from("historial_movimientos")
-    .select("codigo_socio, ingreso, tipo_movimiento");
+    .select("socio_id, ingreso, tipo_movimiento");
+
+  if (errorMov) {
+    console.error("Error historial:", errorMov);
+    return;
+  }
+
+  console.log("MOVIMIENTOS:", movimientos);
 
   // 🔥 AGRUPAR CUOTA INICIAL
   let cuotasPorSocio = {};
 
   movimientos?.forEach(m => {
 
-  const tipo = (m.tipo_movimiento || "").trim().toUpperCase();
+    const tipo = (m.tipo_movimiento || "").trim().toUpperCase();
 
-  if (tipo === "CUOTA_INICIAL") {
+    if (tipo === "CUOTA_INICIAL") {
 
-    const key = m.codigo_socio;
+      const key = m.socio_id; // 🔥 UUID
 
-    cuotasPorSocio[key] =
-      (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
-  }
+      cuotasPorSocio[key] =
+        (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
+    }
 
-});
+  });
 
-  // 🔍 DEBUG
   console.log("MAPA CUOTAS:", cuotasPorSocio);
-  console.log("SOCIOS IDS:", socios.map(s => s.id));
 
   // 🔹 TABLA
   const tabla = document.getElementById("tablaSocios");
@@ -98,8 +103,8 @@ async function cargarSocios() {
   // 🔥 RENDER
   socios.forEach((socio, index) => {
 
-    // 🔥 CLAVE CORRECTA
-    const cuota = cuotasPorSocio[socio.codigo_socio] || 0;
+    // 🔥 CLAVE CORRECTA (UUID)
+    const cuota = cuotasPorSocio[socio.id] || 0;
 
     html += `<tr>`;
 
