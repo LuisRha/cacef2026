@@ -117,7 +117,7 @@ if (tipo === "PRESTAMO") {
 
   // 💰 préstamo (suma deuda)
   if (ingreso > 0) {
-    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + ingreso;
+    cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) - ingreso;
   }
 
   // 💸 pago (resta deuda)
