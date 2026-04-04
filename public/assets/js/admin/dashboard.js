@@ -61,7 +61,7 @@ async function cargarSocios() {
   // 🔥 TRAER HISTORIAL (CORRECTO)
   const { data: movimientos } = await supabase
     .from("historial_movimientos")
-    .select("socio_id, ingreso, tipo_movimiento");
+    .select("codigo_socio, ingreso, tipo_movimiento");
 
   // 🔥 AGRUPAR CUOTA INICIAL
   let cuotasPorSocio = {};
@@ -70,7 +70,7 @@ async function cargarSocios() {
 
     if (m.tipo_movimiento === "CUOTA_INICIAL") {
 
-      const key = m.socio_id;
+      const key = m.codigo_socio;
 
       cuotasPorSocio[key] =
         (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
@@ -97,7 +97,7 @@ async function cargarSocios() {
   socios.forEach((socio, index) => {
 
     // 🔥 CLAVE CORRECTA
-    const cuota = cuotasPorSocio[socio.id] || 0;
+    const cuota = cuotasPorSocio[socio.codigo_socio] || 0;
 
     html += `<tr>`;
 
