@@ -112,8 +112,9 @@ async function cargarSocios() {
       cuentas.EGRESO[id] = (cuentas.EGRESO[id] || 0) + egreso;
     }
 
+    // 🔥 CORRECCIÓN IMPORTANTE
     if (tipo === "PRESTAMO") {
-      cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + egreso;
+      cuentas.PRESTAMO[id] = (cuentas.PRESTAMO[id] || 0) + ingreso;
     }
 
   });
@@ -143,6 +144,9 @@ async function cargarSocios() {
     const egreso = cuentas.EGRESO[id] || 0;
     const deuda = cuentas.PRESTAMO[id] || 0;
 
+    // 🔥 NUEVO → TOTAL REAL
+    const total = cuota + ahorro + beneficio + interes - egreso - deuda;
+
     html += `<tr>`;
 
     html += `<td>${index + 1}</td>`;
@@ -161,7 +165,7 @@ async function cargarSocios() {
       <td>$${egreso.toFixed(2)}</td>
       <td>$0.00</td> <!-- INTERES PENDIENTE -->
       <td>$${deuda.toFixed(2)}</td>
-      <td>$0.00</td>
+      <td>$${total.toFixed(2)}</td> <!-- 🔥 YA FUNCIONA -->
       <td>0</td>
       <td></td>
     `;
