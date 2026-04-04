@@ -68,15 +68,17 @@ async function cargarSocios() {
 
   movimientos?.forEach(m => {
 
-    if (m.tipo_movimiento === "CUOTA_INICIAL") {
+  const tipo = (m.tipo_movimiento || "").trim().toUpperCase();
 
-      const key = m.codigo_socio;
+  if (tipo === "CUOTA_INICIAL") {
 
-      cuotasPorSocio[key] =
-        (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
-    }
+    const key = m.codigo_socio;
 
-  });
+    cuotasPorSocio[key] =
+      (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
+  }
+
+});
 
   // 🔍 DEBUG
   console.log("MAPA CUOTAS:", cuotasPorSocio);
