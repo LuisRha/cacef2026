@@ -32,7 +32,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
 async function cargarSocios() {
 
   // 🔹 TRAER SOCIOS
-  const { data, error } = await supabase
+  const { data: socios, error } = await supabase
     .from("socios")
     .select("*")
     .order("codigo_socio", { ascending: true });
@@ -58,29 +58,29 @@ async function cargarSocios() {
     totalCaja += Number(c.monto || 0);
   });
 
-  // 🔥 TRAER HISTORIAL
-  const { data: cuotasData } = await supabase
+  // 🔥 TRAER HISTORIAL (USANDO CODIGO_SOCIO)
+  const { data: movimientos } = await supabase
     .from("historial_movimientos")
-    .select("socio_id, ingreso, tipo_movimiento")
+    .select("codigo_socio, ingreso, tipo_movimiento");
 
-  // 🔥 AGRUPAR CUOTAS
+  // 🔥 AGRUPAR CUOTA INICIAL
   let cuotasPorSocio = {};
 
-cuotasData?.forEach(m => {
+  movimientos?.forEach(m => {
 
-  if (m.tipo_movimiento === "CUOTA_INICIAL") {
+    if (m.tipo_movimiento === "CUOTA_INICIAL") {
 
-    const key = m.socio_id;
+      const key = m.codigo_socio;
 
-    cuotasPorSocio[key] =
-      (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
-  }
+      cuotasPorSocio[key] =
+        (cuotasPorSocio[key] || 0) + Number(m.ingreso || 0);
+    }
 
-});
+  });
 
-  // 🔍 DEBUG IMPORTANTE
-  console.log("CUOTAS POR SOCIO:", cuotasPorSocio);
-  console.log("SOCIOS IDS:", data.map(s => s.id));
+  // 🔍 DEBUG
+  console.log("MAPA CUOTAS:", cuotasPorSocio);
+  console.log("SOCIOS:", socios.map(s => s.codigo_socio));
 
   // 🔹 TABLA
   const tabla = document.getElementById("tablaSocios");
@@ -90,13 +90,14 @@ cuotasData?.forEach(m => {
     return;
   }
 
-  const totalSocios = data.length;
+  const totalSocios = socios.length;
   let html = "";
 
   // 🔥 RENDER
-  data.forEach((socio, index) => {
+  socios.forEach((socio, index) => {
 
-    const cuota = cuotasPorSocio[socio.id] || 0;
+    // 🔥 AQUÍ ESTÁ LA CLAVE
+    const cuota = cuotasPorSocio[socio.codigo_socio] || 0;
 
     html += `<tr>`;
 
