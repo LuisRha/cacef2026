@@ -100,7 +100,7 @@ async function cargarSocios() {
       cuentas.CUENTA_AHORRO[id] = (cuentas.CUENTA_AHORRO[id] || 0) + ingreso;
     }
 
-    if (tipo === "BENEFICIO_CONSOLIDADO") {
+    if (tipo === "BENEFICIOS_CONSOLIDADO") {
       cuentas.BENEFICIO_CONSOLIDADO[id] = (cuentas.BENEFICIO_CONSOLIDADO[id] || 0) + ingreso;
     }
 
