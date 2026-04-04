@@ -110,13 +110,39 @@ if (tipo === "CUOTA_INICIAL") {
 
   }
 
-    if (tipo === "CUENTA_AHORRO") {
-      cuentas.CUENTA_AHORRO[id] = (cuentas.CUENTA_AHORRO[id] || 0) + ingreso;
-    }
+    // 🔥 CUENTA DE AHORRO (CORREGIDO)
+if (tipo === "CUENTA_AHORRO") {
 
-    if (tipo === "BENEFICIOS_CONSOLIDADO") {
-      cuentas.BENEFICIO_CONSOLIDADO[id] = (cuentas.BENEFICIO_CONSOLIDADO[id] || 0) + ingreso;
-    }
+  // 💰 ingreso (depósito)
+  if (ingreso > 0) {
+    cuentas.CUENTA_AHORRO[id] =
+      (cuentas.CUENTA_AHORRO[id] || 0) + ingreso;
+  }
+
+  // 💸 egreso (retiro)
+  if (egreso > 0) {
+    cuentas.CUENTA_AHORRO[id] =
+      (cuentas.CUENTA_AHORRO[id] || 0) - egreso;
+  }
+
+}
+
+    // 🔥 BENEFICIO CONSOLIDADO (CORREGIDO)
+if (tipo === "BENEFICIOS_CONSOLIDADO") {
+
+  // 💰 suma
+  if (ingreso > 0) {
+    cuentas.BENEFICIO_CONSOLIDADO[id] =
+      (cuentas.BENEFICIO_CONSOLIDADO[id] || 0) + ingreso;
+  }
+
+  // 💸 resta
+  if (egreso > 0) {
+    cuentas.BENEFICIO_CONSOLIDADO[id] =
+      (cuentas.BENEFICIO_CONSOLIDADO[id] || 0) - egreso;
+  }
+
+}
 
     if (tipo === "INGRESO_INTERES") {
       cuentas.INGRESO_INTERES[id] = (cuentas.INGRESO_INTERES[id] || 0) + ingreso;
