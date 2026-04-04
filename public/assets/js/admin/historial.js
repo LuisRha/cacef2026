@@ -57,7 +57,7 @@ buscarSocio.addEventListener("input", async () => {
 
   const { data, error } = await supabase
     .from("socios")
-    .select("codigo_socio, nombres")
+    .select("id, codigo_socio, nombres")
     .or(filtro)
     .limit(10);
 
@@ -76,7 +76,7 @@ buscarSocio.addEventListener("input", async () => {
 
       item.addEventListener("click", () => {
         buscarSocio.value = socio.nombres;
-        inputCodigoSocio.value = socio.codigo_socio;
+        inputCodigoSocio.value = socio.id;
         listaSocios.innerHTML = "";
         listaSocios.style.display = "none";
       });

@@ -76,7 +76,7 @@ buscarSocio.addEventListener("input", async () => {
 
     item.addEventListener("click", () => {
       buscarSocio.value = socio.nombres;
-      inputCodigoSocio.value = socio.codigo_socio;
+      inputCodigoSocio.value = socio.id;
       listaSocios.innerHTML = "";
       listaSocios.style.display = "none";
     });
