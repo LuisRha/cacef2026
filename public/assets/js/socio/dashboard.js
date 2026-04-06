@@ -1,5 +1,5 @@
 import { supabase } from "../supabase.js";
-import { soloSocio } from "../auth.js";
+import { soloSocio } from "../seguridad.js";
 
 console.log("🔥 Dashboard socio iniciado");
 
