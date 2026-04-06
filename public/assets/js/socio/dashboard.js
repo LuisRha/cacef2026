@@ -1,31 +1,54 @@
 import { supabase } from "../supabase.js";
+import { soloSocio } from "../auth.js";
+
+console.log("🔥 Dashboard socio iniciado");
 
 document.addEventListener("DOMContentLoaded", async () => {
-  // 1️⃣ Obtener usuario autenticado
-  const {
-    data: { user },
-    error: userError,
-  } = await supabase.auth.getUser();
 
-  if (userError || !user) {
-    window.location.href = "/index.html";
-    return;
-  }
+  /* =========================
+     🔐 VALIDAR USUARIO (SOLO SOCIO)
+  ========================= */
+  const usuario = await soloSocio();
 
-  // 2️⃣ Consultar datos del socio enlazado
+  /* =========================
+     🔍 BUSCAR SOCIO (POR ID)
+  ========================= */
   const { data: socio, error } = await supabase
     .from("socios")
     .select("nombres, codigo_socio, saldo")
-    .eq("user_id", user.id)
-    .single();
+    .eq("id", usuario.id) // 🔥 conexión correcta
+    .maybeSingle();
+
+  console.log("SOCIO:", socio);
 
   if (error || !socio) {
-    console.error("Socio no encontrado:", error);
+    console.error("❌ Socio no encontrado:", error);
+    alert("No existe socio vinculado");
     return;
   }
 
-  // 3️⃣ Pintar datos en el dashboard
-  document.getElementById("nombreSocio").textContent = socio.nombres;
-  document.getElementById("codigoSocio").textContent = socio.codigo_socio;
-  document.getElementById("saldo").textContent = Number(socio.saldo).toFixed(2);
+  /* =========================
+     🎯 MOSTRAR DATOS
+  ========================= */
+  document.getElementById("nombreSocio").textContent =
+    socio.nombres || "-";
+
+  document.getElementById("codigoSocio").textContent =
+    socio.codigo_socio || "-";
+
+  document.getElementById("saldo").textContent =
+    Number(socio.saldo || 0).toFixed(2);
+
+  /* =========================
+     🔴 LOGOUT
+  ========================= */
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  if (logoutBtn) {
+    logoutBtn.onclick = async () => {
+      await supabase.auth.signOut();
+      window.location.href = "/";
+    };
+  }
+
 });
