@@ -28,17 +28,70 @@ document.addEventListener("DOMContentLoaded", async () => {
   ========================= */
   const { data: socio, error } = await supabase
     .from("socios")
-    .select("nombres, codigo_socio, saldo")
+    .select("id, nombres, codigo_socio")
     .eq("email", email)
     .maybeSingle();
-
-  console.log("SOCIO:", socio);
 
   if (error || !socio) {
     console.error("❌ Socio no encontrado:", error);
     alert("No existe socio vinculado");
     return;
   }
+
+  console.log("SOCIO:", socio);
+
+  /* =========================
+     💰 TRAER MOVIMIENTOS
+  ========================= */
+  const { data: movimientos, error: movError } = await supabase
+    .from("historial_movimientos")
+    .select("ingreso, egreso, tipo_movimiento")
+    .eq("socio_id", socio.id);
+
+  if (movError) {
+    console.error("❌ Error movimientos:", movError);
+    return;
+  }
+
+  /* =========================
+     💰 CALCULAR TOTAL (IGUAL ADMIN)
+  ========================= */
+  let cuota = 0;
+  let ahorro = 0;
+  let beneficio = 0;
+  let egreso = 0;
+  let deuda = 0;
+
+  movimientos?.forEach(m => {
+
+    const tipo = (m.tipo_movimiento || "").trim().toUpperCase();
+
+    const ingreso = Number(m.ingreso || 0);
+    const egresoVal = Number(m.egreso || 0);
+
+    if (tipo === "CUOTA_INICIAL") {
+      cuota += ingreso - egresoVal;
+    }
+
+    if (tipo === "CUENTA_AHORRO") {
+      ahorro += ingreso - egresoVal;
+    }
+
+    if (tipo === "BENEFICIOS_CONSOLIDADO") {
+      beneficio += ingreso - egresoVal;
+    }
+
+    if (tipo === "EGRESO") {
+      egreso += egresoVal;
+    }
+
+    if (tipo === "PRESTAMO") {
+      deuda += egresoVal - ingreso;
+    }
+
+  });
+
+  const total = cuota + ahorro + beneficio - egreso - deuda;
 
   /* =========================
      🎯 MOSTRAR DATOS
@@ -50,7 +103,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     socio.codigo_socio || "-";
 
   document.getElementById("saldo").textContent =
-    Number(socio.saldo || 0).toFixed(2);
+    total.toFixed(2);
 
   /* =========================
      🔴 LOGOUT
