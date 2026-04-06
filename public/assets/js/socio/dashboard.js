@@ -8,15 +8,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   /* =========================
      🔐 VALIDAR USUARIO (SOLO SOCIO)
   ========================= */
-  const usuario = await soloSocio();
+  await soloSocio();
 
   /* =========================
-     🔍 BUSCAR SOCIO (POR ID)
+     🔍 OBTENER USUARIO LOGIN
+  ========================= */
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+
+  if (userError || !userData?.user) {
+    console.error("❌ Usuario no autenticado");
+    window.location.href = "/index.html";
+    return;
+  }
+
+  const email = userData.user.email;
+
+  /* =========================
+     🔍 BUSCAR SOCIO POR EMAIL
   ========================= */
   const { data: socio, error } = await supabase
     .from("socios")
     .select("nombres, codigo_socio, saldo")
-    .eq("id", usuario.id) // 🔥 conexión correcta
+    .eq("email", email)
     .maybeSingle();
 
   console.log("SOCIO:", socio);
